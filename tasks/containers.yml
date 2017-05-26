@@ -1,0 +1,19 @@
+---
+# Tasks to setup docker testing containers
+
+- name: setup docker testing containers
+  include_role:
+    name: docker_provisioner
+  vars:
+    docker_provisioner_images: >-
+      {{ (docker_sandbox_containers_state in ['present', 'started'])
+        | ternary(docker_sandbox_images, []) }}
+    docker_provisioner_image_state: present
+    docker_provisioner_image_force: true
+    docker_provisioner_container_restart: true
+    docker_provisioner_container_tty: false
+    docker_provisioner_container_state: >-
+      {{ docker_sandbox_containers_state | default("present") }}
+    docker_provisioner_container_groups: ['docker_sandbox_containers']
+  tags:
+    - role::docker_sandbox

@@ -1,0 +1,16 @@
+---
+# Role tasks
+
+- block:
+
+  - name: create inventory file for docker testing containers
+    include: inventory.yml
+
+  - name: cleanup data created during tests
+    include: cleanup.yml
+    tags:
+      - role::docker_sandbox
+      - role::docker_sandbox::cleanup
+
+  tags:
+    - role::docker_sandbox

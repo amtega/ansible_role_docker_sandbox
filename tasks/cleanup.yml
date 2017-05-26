@@ -1,0 +1,11 @@
+---
+# Tasks to cleanup data created during tests
+
+- name: remove inventory file for docker testing containers
+  file:
+    path: "{{ docker_sandbox_inventory }}"
+    state: absent
+  when: docker_sandbox_containers_state == "absent"
+  tags:
+    - role::docker_sandbox
+    - role::docker_sandbox::cleanup

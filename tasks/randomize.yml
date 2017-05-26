@@ -1,0 +1,10 @@
+---
+# Tasks to randomize testing docker containers
+
+- name: generate random docker containers list
+  set_fact:
+    docker_provisioner_containers: >-
+      {{ docker_sandbox_containers | randomize_names }}
+  when: docker_sandbox_containers_state in ['present', 'started']
+  tags:
+    - role::docker_sandbox

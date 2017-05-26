@@ -1,0 +1,10 @@
+{{ ansible_managed | comment }}
+{% for container in docker_sandbox_containers %}
+{% set vars = hostvars[container.name] %}
+{% for group in container.groups | default([docker_sandbox_containers_group]) %}
+
+[{{ group }}]
+{{ container.name }} ansible_host={{ vars['ansible_host'] }} ansible_user={{ vars['ansible_user'] }} ansible_password={{ vars['ansible_password'] }} ansible_connection={{ vars['ansible_connection'] }}
+
+{% endfor %}
+{% endfor %}

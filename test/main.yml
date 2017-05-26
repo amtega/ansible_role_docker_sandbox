@@ -1,0 +1,43 @@
+---
+# Tasks for tesing role
+
+- name: setup docker testing environment for idempotence tests
+  hosts: localhost
+  roles:
+    - docker_sandbox
+
+- name: run idempotence test
+  hosts: localhost
+  roles:
+    - role: idempotence_tester
+      idempotence_tester_inventory_file: >-
+        {{ docker_sandbox_inventory_file }}
+
+- name: cleanup docker testing environment for idempotence tests
+  hosts: localhost
+  roles:
+    - role: docker_sandbox
+      docker_sandbox_images: []
+      docker_sandbox_containers_state: absent
+
+# - name: setup docker testing environment
+#   hosts: localhost
+#   roles:
+#     - docker_sandbox
+
+- name: test docker_sandbox role
+  hosts: docker_sandbox_containers
+  tasks:
+    - name: create an empty file to check idempotence test
+      copy:
+        src: /etc/issue
+        dest: /tmp/docker_sandbox
+        force: no
+  tags:
+    - idempotence
+
+# - name: cleanup docker testing environment
+#   hosts: localhost
+  # roles:
+  #   - role: docker_sandbox
+  #     docker_sandbox_containers_state: absent

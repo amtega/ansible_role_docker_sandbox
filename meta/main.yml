@@ -1,0 +1,19 @@
+---
+# Role dependencies
+
+dependencies:
+
+  - role: docker_provisioner
+    docker_provisioner_images: "{{ docker_sandbox_images }}"
+    docker_provisioner_image_state: present
+    docker_provisioner_image_force: true
+    docker_provisioner_containers: "{{ docker_sandbox_containers }}"
+    docker_provisioner_container_tty: false
+    docker_provisioner_container_recreate: >-
+      {{ docker_sandbox_containers_recreate }}
+    docker_provisioner_container_restart: >-
+      {{ docker_sandbox_containers_restart }}
+    docker_provisioner_container_state: >-
+      {{ docker_sandbox_containers_state }}
+    docker_provisioner_container_groups:
+      - "{{ docker_sandbox_containers_group }}"
