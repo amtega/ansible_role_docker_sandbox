@@ -1,6 +1,2 @@
 ---
 # Role variables
-
-# Directory to store the session file
-
-docker_sandbox_inventory_dir: "."

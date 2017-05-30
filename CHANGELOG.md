@@ -1,9 +1,11 @@
 # Change Log
 
-## 2017-03-09
+## YYYY-MM-DD
 
 - Initial release
 
-## 2017-05-08
+## YYYY-MM-DD
 
-- Refactored containers management using name suffix.
+- Change 1
+- Change 2
+- Change N

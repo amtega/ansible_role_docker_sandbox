@@ -1,26 +1,9 @@
 ---
 # Role default lower priority variables
 
-# List of docker images to use for testing.
-
 docker_sandbox_images: []
-
-# List of docker containers to use for testing.
-
 docker_sandbox_containers: []
-
-# Force the re-creation of an existing container.
-
-docker_sandbox_containers_recreate: false
-
-# Force any existing container to be stopped and restarted.
-
-docker_sandbox_containers_restart: false
-
-# State for testing docker containers
-
-docker_sandbox_containers_state: started
-
-# Group where to put the provisioned containers
-
-docker_sandbox_containers_group: "docker_sandbox_containers"
+docker_sandbox_group: docker_sandbox_containers
+docker_sandbox_state: started
+docker_sandbox_idempotence_test: true
+docker_sandbox_idempotence_test_tag: idempotence

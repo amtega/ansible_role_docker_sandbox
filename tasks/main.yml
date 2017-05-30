@@ -2,15 +2,67 @@
 # Role tasks
 
 - block:
+  - name: create temporary file to store docker sandbox containers inventory
+    tempfile:
+      state: file
+      suffix: .inventory
+    register: docker_sandbox_create_inventory_result
 
-  - name: create inventory file for docker testing containers
-    include: inventory.yml
+  - name: setup fact with path to docker sandbox containers inventory
+    set_fact:
+      docker_sandbox_inventory: >-
+        {{ docker_sandbox_create_inventory_result.path }}
 
-  - name: cleanup data created during tests
-    include: cleanup.yml
-    tags:
-      - role::docker_sandbox
-      - role::docker_sandbox::cleanup
+  - name: setup docker sandbox environment
+    include_role:
+      name: docker_provisioner
+    vars:
+      docker_provisioner_images: "{{ docker_sandbox_images }}"
+      docker_provisioner_image_state: present
+      docker_provisioner_image_force: true
+      docker_provisioner_containers: "{{ docker_sandbox_containers }}"
+      docker_provisioner_container_groups: ["{{ docker_sandbox_group }}"]
+      docker_provisioner_inventory: "{{ docker_sandbox_inventory }}"
+      docker_provisioner_container_state: started
+      docker_provisioner_container_restart: true
+  when: docker_sandbox_state == "started"
 
-  tags:
-    - role::docker_sandbox
+- name: launch idempotence test
+  include_role:
+    name: idempotence_tester
+  vars:
+    idempotence_tester_inventory: "{{ docker_sandbox_inventory }}"
+    idempotence_tester_tag: "{{ docker_sandbox_idempotence_test_tag }}"
+    idempotence_tester_group: "{{ docker_sandbox_group }}"
+  when:
+    - docker_sandbox_idempotence_test
+    - docker_sandbox_inventory | length > 0
+
+- name: refresh docker sandbox environment
+  include_role:
+    name: docker_provisioner
+  vars:
+    docker_provisioner_images: []
+    docker_provisioner_containers: "{{ docker_sandbox_containers }}"
+    docker_provisioner_container_groups: ["{{ docker_sandbox_group }}"]
+    docker_provisioner_inventory: "{{ docker_sandbox_inventory }}"
+    docker_provisioner_container_state: started
+    docker_provisioner_container_restart: true
+  when: >-
+    (docker_sandbox_idempotence_test and docker_sandbox_state == "started")
+    or docker_sandbox_state == "restarted"
+
+- block:
+  - name: cleanup docker sandbox environment
+    include_role:
+      name: docker_provisioner
+    vars:
+      docker_provisioner_images: []
+      docker_provisioner_containers: "{{ docker_sandbox_containers }}"
+      docker_provisioner_container_state: absent
+
+  - name: delete temporary file with docker sandbox containers inventory
+    file:
+      path: "{{ docker_sandbox_inventory }}"
+      state: absent
+  when: docker_sandbox_state == "absent"
