@@ -1,9 +1,34 @@
 ---
 # Role default lower priority variables
 
+# List of docker images to use to setup de sandbox. If not specified and
+# docker_presets role is loaded, all images presets will be used.
+# See docker_provisioner documentation to know the structure of this list.
+
 docker_sandbox_images: []
+
+# List of docker containers to use to setup de sandbox. If not specified and
+# docker_presets role is loaded, all container presets will be used.
+# See docker_provisioner documentation to know the structure of this list.
+
 docker_sandbox_containers: []
+
+# Group to put in the sandbox provisioned containers
+
 docker_sandbox_group: docker_sandbox_containers
+
+# State of the docker sandbox. Can be started, restarted or absent.
+# The difference between started and restarted is that the last will not
+# provisione the images, something useful if you only want to refresh the
+# containers.
+
 docker_sandbox_state: started
+
+# Indicate if the idempotence test must be run using idempotence_tester role.
+
 docker_sandbox_idempotence_test: true
+
+# Indicate the tag to use to limit the scope of the tasks intended to be run
+# during the idempotence test.
+
 docker_sandbox_idempotence_test_tag: idempotence

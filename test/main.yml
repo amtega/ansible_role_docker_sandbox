@@ -1,2 +1,30 @@
 ---
 # Tasks for tesing role
+
+- name: test docker_sandbox role
+  hosts: localhost
+  roles:
+    - role: docker_presets
+    - role: docker_sandbox
+      docker_sandbox_state: started
+  tasks:
+    - name: assert that idempotence test was ok
+      assert:
+        that: not docker_sandbox_test_result | failed
+
+- name: simple idempotence test
+  hosts: docker_sandbox_containers
+  tasks:
+    - name: create an empty file
+      copy:
+        src: /etc/issue
+        dest: /tmp/
+        force: no
+  tags:
+    - idempotence
+
+- name: cleanup docker docker sandbox
+  hosts: localhost
+  roles:
+    - role: docker_sandbox
+      docker_sandbox_state: absent

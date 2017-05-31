@@ -1,30 +1,64 @@
-# role_name
+# docker_sandbox
 
-A brief description of the role goes here.
+This is an [Ansible](http://www.ansible.com) role that wraps docker_provisioner and idempotence_tester roles to make easy to run unit tests.
+
+The role will provisione a docker based sandbox and run idempotence tests on the deployed containers.
 
 ## Requirements
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+- Ansible >= 2.3
 
 ## Role Variables
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+A list of all the default variables for this role is available in `defaults/main.yml`.
 
 ## Dependencies
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+This role depends on 'docker_provisioner' and 'idempotence_tester' roles.
 
 ## Example Playbook
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+This is an example playbook:
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+```yaml
+---
+- name: sample docker_sandbox usage
+  hosts: localhost
+  roles:
+    - role: docker_presets
+    - role: docker_sandbox
+      docker_sandbox_state: started
+  tasks:
+    - name: assert that idempotence test was ok
+      assert:
+        that: not docker_sandbox_test_result | failed
+
+- name: simple idempotence test
+  hosts: docker_sandbox_containers
+  tasks:
+    - name: create an empty file
+      copy:
+        src: /etc/issue
+        dest: /tmp/
+        force: no
+  tags:
+    - idempotence
+
+- name: cleanup docker docker sandbox
+  hosts: localhost
+  roles:
+    - role: docker_sandbox
+      docker_sandbox_state: absent
+```
 
 ## Testing
 
-A description of how to run tests of the role if available.
+You can run the tests with the following commands:
+
+```shell
+$ cd docker_sandbox/test
+$ ansible-playbook main.yml
+```
 
 ## License
 
@@ -32,5 +66,4 @@ Not defined.
 
 ## Author Information
 
-- author_name 1 ([mail_adrress_1](mailto:mail_address_1))
-- author_name N ([mail_adrress_N](mailto:mail_address_N))
+- Juan Antonio Valiño García ([juanval@edu.xunta.es](mailto:juanval@edu.xunta.es)). Amtega - Xunta de Galicia
