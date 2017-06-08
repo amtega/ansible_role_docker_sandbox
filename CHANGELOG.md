@@ -7,3 +7,11 @@
 ## 2016-06-01
 
 - Improved documentation in README.md file.
+
+## 2017-06-05
+
+- Improved documentation in README.md file.
+
+## 2017-06-07
+
+- Fixed sandbox containers to use ssh instead of tty.

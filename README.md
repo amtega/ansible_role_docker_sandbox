@@ -1,4 +1,4 @@
-# docker_sandbox
+# Ansible docker_sandbox role
 
 This is an [Ansible](http://www.ansible.com) role that wraps docker_provisioner and idempotence_tester roles to make easy to run unit tests.
 

@@ -45,6 +45,7 @@
       docker_provisioner_image_force: true
       docker_provisioner_containers: "{{ docker_sandbox_containers }}"
       docker_provisioner_container_groups: ["{{ docker_sandbox_group }}"]
+      docker_provisioner_container_tty: false
       docker_provisioner_inventory: >-
         {{ (docker_sandbox_state not in ["started", "restarted"])
           | ternary("", docker_sandbox_inventory) }}
