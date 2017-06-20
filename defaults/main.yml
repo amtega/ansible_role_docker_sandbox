@@ -32,3 +32,8 @@ docker_sandbox_idempotence_test: true
 # during the idempotence test.
 
 docker_sandbox_idempotence_test_tag: idempotence
+
+# Before setup the sandbox remove previous containers created with the same
+# parent process id that the actual
+
+docker_sandbox_cleanup: false

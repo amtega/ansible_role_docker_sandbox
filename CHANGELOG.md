@@ -15,3 +15,7 @@
 ## 2017-06-07
 
 - Fixed sandbox containers to use ssh instead of tty.
+
+## 2017-06-17
+
+- Added "docker_sandbox_ppid=parent process" to sandbox containers labels.

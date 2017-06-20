@@ -3,6 +3,19 @@
 
 - block:
 
+  - debug: msg="{{ lookup('pipe', 'ps -o ppid= -p `ps -o ppid= -p $PPID`') | trim }}"
+
+  - block:
+
+    - name: search previous containers
+      shell: >-
+        docker ps -aq --filter
+        label=docker_sandbox_ppid={{ lookup('pipe', 'ps -o ppid= -p $PPID') | trim }}
+      changed_when: false
+      register: docker_sandbox_previous_containers_result
+
+    when: docker_sandbox_cleanup
+
   - name: stop playbook if docker_sandbox_state has invalid value
     fail:
       msg: "docker_sandbox_state has an invalid value"
@@ -44,6 +57,9 @@
       docker_provisioner_image_state: present
       docker_provisioner_image_force: true
       docker_provisioner_containers: "{{ docker_sandbox_containers }}"
+      docker_provisioner_container_labels:
+        'docker_sandbox_ppid': >-
+          {{ lookup('pipe', 'ps -o ppid= -p `ps -o ppid= -p $PPID`') | trim }}
       docker_provisioner_container_groups: ["{{ docker_sandbox_group }}"]
       docker_provisioner_container_tty: false
       docker_provisioner_inventory: >-
