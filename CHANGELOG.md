@@ -18,4 +18,10 @@
 
 ## 2017-06-17
 
-- Added "docker_sandbox_ppid=parent process" to sandbox containers labels.
+- Added "docker_sandbox_ppid" to sandbox containers labels.
+
+## 2017-06-21
+
+- Added "docker_sandbox_user" to sandbox containers labels.
+- Adddd mechanism to cleanup stalled containers based on ppid and user.
+- Improved documentation.

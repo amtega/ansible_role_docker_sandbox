@@ -3,18 +3,42 @@
 
 - block:
 
-  - debug: msg="{{ lookup('pipe', 'ps -o ppid= -p `ps -o ppid= -p $PPID`') | trim }}"
+  - name: search previous dockers containers created by same parent ppid
+    shell: >-
+      docker ps -a --format='{''{.ID}''}/{''{.Names}''}'
+      --filter label=docker_sandbox_ppid={{ lookup(
+        'pipe',
+        'ps -o ppid= -p `ps -o ppid= -p $PPID`')
+        | trim }}
+    changed_when: false
+    when: docker_sandbox_cleanup_by_ppid
+    register: docker_sandbox_containers_by_ppid_result
 
-  - block:
+  - name: search previous dockers containers created by same user
+    shell: >-
+      docker ps -a --format='{''{.ID}''}/{''{.Names}''}'
+      --filter label=docker_sandbox_user={{ lookup(
+        'pipe',
+        'echo $USER')
+        | trim }}
+    changed_when: false
+    when: docker_sandbox_cleanup_by_user
+    register: docker_sandbox_containers_by_user_result
 
-    - name: search previous containers
-      shell: >-
-        docker ps -aq --filter
-        label=docker_sandbox_ppid={{ lookup('pipe', 'ps -o ppid= -p $PPID') | trim }}
-      changed_when: false
-      register: docker_sandbox_previous_containers_result
-
-    when: docker_sandbox_cleanup
+  - name: remove stalled dockers containers
+    docker_container:
+      name: "{{ item.split('/')[0] }}"
+      state: absent
+      force_kill: true
+    when: docker_sandbox_cleanup_by_ppid or docker_sandbox_cleanup_by_user
+    with_items: >-
+      {{ docker_sandbox_containers_by_ppid_result.stdout_lines | default([])
+        | union(
+            docker_sandbox_containers_by_user_result.stdout_lines
+              | default([]))
+        | unique }}
+    loop_control:
+      label: "{{ item.split('/')[1] }} ({{ item.split('/')[0] }})"
 
   - name: stop playbook if docker_sandbox_state has invalid value
     fail:
@@ -58,8 +82,10 @@
       docker_provisioner_image_force: true
       docker_provisioner_containers: "{{ docker_sandbox_containers }}"
       docker_provisioner_container_labels:
-        'docker_sandbox_ppid': >-
+        docker_sandbox_ppid: >-
           {{ lookup('pipe', 'ps -o ppid= -p `ps -o ppid= -p $PPID`') | trim }}
+        docker_sandbox_user: >-
+          {{ lookup('pipe', 'echo $USER') | trim }}
       docker_provisioner_container_groups: ["{{ docker_sandbox_group }}"]
       docker_provisioner_container_tty: false
       docker_provisioner_inventory: >-

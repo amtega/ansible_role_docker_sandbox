@@ -23,6 +23,50 @@
   tags:
     - idempotence
 
+- name: test cleanup by ppid
+  hosts: localhost
+  roles:
+    - role: docker_sandbox
+      docker_sandbox_cleanup_by_ppid: true
+      docker_sandbox_cleanup_by_user: false
+  tasks:
+    - name: search running docker containers created by the test
+      shell: >-
+        docker ps -a --format='{''{.Names}''}'
+        --filter label=docker_sandbox_ppid={{ lookup(
+          'pipe',
+          'ps -o ppid= -p `ps -o ppid= -p $PPID`')
+          | trim }}
+      changed_when: false
+      register: search_test_containers_result
+
+    - name: verify only running docker containers are the last ones created
+      assert:
+       that: item in docker_sandbox_containers | map(attribute='name') | list
+      with_items: "{{ search_test_containers_result.stdout_lines }}"
+
+- name: test cleanup by user
+  hosts: localhost
+  roles:
+    - role: docker_sandbox
+      docker_sandbox_cleanup_by_ppid: false
+      docker_sandbox_cleanup_by_user: true
+  tasks:
+    - name: search running docker containers created by the test
+      shell: >-
+        docker ps -a --format='{''{.Names}''}'
+        --filter label=docker_sandbox_ppid={{ lookup(
+          'pipe',
+          'ps -o ppid= -p `ps -o ppid= -p $PPID`')
+          | trim }}
+      changed_when: false
+      register: search_test_containers_result
+
+    - name: verify only running docker containers are the last ones created
+      assert:
+       that: item in docker_sandbox_containers | map(attribute='name') | list
+      with_items: "{{ search_test_containers_result.stdout_lines }}"
+
 - name: cleanup docker docker sandbox
   hosts: localhost
   roles:

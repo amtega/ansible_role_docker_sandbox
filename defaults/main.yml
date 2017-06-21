@@ -34,6 +34,13 @@ docker_sandbox_idempotence_test: true
 docker_sandbox_idempotence_test_tag: idempotence
 
 # Before setup the sandbox remove previous containers created with the same
-# parent process id that the actual
+# parent process id than actual. Be warned that this option may cause problems
+# if you launch several sandboxes in parallel.
 
-docker_sandbox_cleanup: false
+docker_sandbox_cleanup_by_ppid: true
+
+# Before setup the sandbox remove previous containers created with the same
+# user than the actual. Be warned that this option may cause problems
+# if you launch several sandboxes in parallel.
+
+docker_sandbox_cleanup_by_user: true
