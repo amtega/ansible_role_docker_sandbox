@@ -44,3 +44,9 @@ docker_sandbox_cleanup_by_ppid: true
 # if you launch several sandboxes in parallel.
 
 docker_sandbox_cleanup_by_user: true
+
+# Before setup the sandbox remove previous containers created with the same
+# playbook than the actual. Be warned that this option may cause problems
+# if you launch several sandboxes in parallel.
+
+docker_sandbox_cleanup_by_playbook: true

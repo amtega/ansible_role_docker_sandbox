@@ -25,3 +25,7 @@
 - Added "docker_sandbox_user" to sandbox containers labels.
 - Adddd mechanism to cleanup stalled containers based on ppid and user.
 - Improved documentation.
+
+## 2017-06-22
+
+- Adddd mechanism to cleanup stalled containers based on playbook
