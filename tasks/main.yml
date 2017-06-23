@@ -1,143 +1,38 @@
 ---
 # Role tasks
 
-- block:
-
-  - name: get playbook file
-    docker_sandbox_playbook:
-    register: docker_sandbox_get_playbook_result
-
-  - name: setup fact with full playbook path
-    set_fact:
-      docker_sandbox_playbook: >-
-        {{ playbook_dir }}/{{ docker_sandbox_get_playbook_result.playbook }}
-
-  - name: search previous dockers containers created by same parent ppid
-    shell: >-
-      docker ps -a --format='{''{.ID}''}/{''{.Names}''}'
-      --filter label=docker_sandbox_ppid={{ lookup(
-        'pipe',
-        'ps -o ppid= -p `ps -o ppid= -p $PPID`')
-        | trim }}
-    changed_when: false
-    when: docker_sandbox_cleanup_by_ppid
-    register: docker_sandbox_containers_by_ppid_result
-
-  - name: search previous dockers containers created by same user
-    shell: >-
-      docker ps -a --format='{''{.ID}''}/{''{.Names}''}'
-      --filter label=docker_sandbox_user={{ lookup(
-        'pipe',
-        'echo $USER')
-        | trim }}
-    changed_when: false
-    when: docker_sandbox_cleanup_by_user
-    register: docker_sandbox_containers_by_user_result
-
-  - name: search previous dockers containers created by same playbook
-    shell: >-
-      docker ps -a --format='{''{.ID}''}/{''{.Names}''}'
-      --filter label=docker_sandbox_playbook={{ docker_sandbox_playbook }}
-    changed_when: false
-    when: docker_sandbox_cleanup_by_playbook
-    register: docker_sandbox_containers_by_playbook_result
-
-  - name: remove stalled dockers containers
-    docker_container:
-      name: "{{ item.split('/')[0] }}"
-      state: absent
-      force_kill: true
-    when: docker_sandbox_cleanup_by_ppid or docker_sandbox_cleanup_by_user
-    with_items: >-
-      {{ docker_sandbox_containers_by_ppid_result.stdout_lines | default([])
-        | union(
-            docker_sandbox_containers_by_user_result.stdout_lines
-              | default([]))
-        | union(
-            docker_sandbox_containers_by_playbook_result.stdout_lines
-              | default([]))
-        | unique }}
-    loop_control:
-      label: "{{ item.split('/')[1] }} ({{ item.split('/')[0] }})"
-
-  - name: stop playbook if docker_sandbox_state has invalid value
-    fail:
-      msg: "docker_sandbox_state has an invalid value"
-    when: docker_sandbox_state not in ["started", "restarted", "absent"]
-
-  - name: defaulting docker sandbox from docker_presets role if necessary
-    set_fact:
-      docker_sandbox_images: >-
-        {{ docker_presets_images }}
-      docker_sandbox_containers: >-
-        {{ docker_presets_containers | docker_presets_randomize_names }}
-    when:
-      - docker_sandbox_images | length == 0 or docker_sandbox_containers == 0
-      - docker_presets_images | default([]) | length > 0
-      - docker_presets_containers | default([]) | length > 0
-
-  - block:
-
-    - name: create temporary file to store docker sandbox containers inventory
-      tempfile:
-        state: file
-        suffix: .inventory
-      register: docker_sandbox_create_inventory_result
-
-    - name: setup fact with path to docker sandbox containers inventory
-      set_fact:
-        docker_sandbox_inventory: >-
-          {{ docker_sandbox_create_inventory_result.path }}
-
-    when: docker_sandbox_state in ["started", "restarted"]
-
-  - name: setup docker sandbox environment
-    include_role:
-      name: docker_provisioner
-    vars:
-      docker_provisioner_images: >-
-        {{ (docker_sandbox_state in ["restarted", "absent"])
-          | ternary([], docker_sandbox_images) }}
-      docker_provisioner_image_state: present
-      docker_provisioner_image_force: true
-      docker_provisioner_containers: "{{ docker_sandbox_containers }}"
-      docker_provisioner_container_labels:
-        docker_sandbox_ppid: >-
-          {{ lookup('pipe', 'ps -o ppid= -p `ps -o ppid= -p $PPID`') | trim }}
-        docker_sandbox_user: >-
-          {{ lookup('pipe', 'echo $USER') | trim }}
-        docker_sandbox_playbook: "{{ docker_sandbox_playbook }}"
-      docker_provisioner_container_groups: ["{{ docker_sandbox_group }}"]
-      docker_provisioner_container_tty: false
-      docker_provisioner_inventory: >-
-        {{ (docker_sandbox_state not in ["started", "restarted"])
-          | ternary("", docker_sandbox_inventory) }}
-      docker_provisioner_container_state: >-
-        {{ (docker_sandbox_state == "restarted")
-          | ternary("started", docker_sandbox_state) }}
-      docker_provisioner_container_restart: true
-
-  - name: launch idempotence test
-    include_role:
-      name: idempotence_tester
-    vars:
-      idempotence_tester_inventory: "{{ docker_sandbox_inventory }}"
-      idempotence_tester_tag: "{{ docker_sandbox_idempotence_test_tag }}"
-      idempotence_tester_group: "{{ docker_sandbox_group }}"
-    when:
-      - docker_sandbox_state in ["started", "restarted"]
-      - docker_sandbox_idempotence_test
-      - docker_sandbox_inventory | length > 0
-
-  - name: setup fact to store idempotence test result
-    set_fact:
-      docker_sandbox_test_result: "{{ idempotence_tester_test_result }}"
-
-  - name: delete temporary file with docker sandbox containers inventory
-    file:
-      path: "{{ docker_sandbox_inventory }}"
-      state: absent
-    when: docker_sandbox_state == "absent"
-
+- name: verify sandbox parameters
+  include: verify.yml
   tags:
     - role::docker_sandbox
+    - role::docker_sandbox::verify
+
+- name: load sandbox presets
+  include: presets.yml
+  tags:
+    - role::docker_sandbox
+    - role::docker_sandbox::presets
+
+- name: manage stalled containers
+  include: stalled.yml
+  tags:
+    - role::docker_sandbox
+    - role::docker_sandbox::stalled
+
+- name: setup sandbox inventory
+  include: inventory.yml
+  tags:
+    - role::docker_sandbox
+    - role::docker_sandbox::inventory
+
+- name: setup docker sandbox environment
+  include: provision.yml
+  tags:
+    - role::docker_sandbox
+    - role::docker_sandbox::provision
+
+- name: run idempotence test
+  include: idempotence.yml
+  tags:
+    - role::docker_sandbox
+    - role::docker_sandbox::idempotence

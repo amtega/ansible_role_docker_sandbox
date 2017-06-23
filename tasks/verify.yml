@@ -1,0 +1,10 @@
+---
+# Sandbox parameters verification tasks
+
+- name: check docker sandbox state value
+  fail:
+    msg: "docker_sandbox_state has an invalid value"
+  when: docker_sandbox_state not in ["started", "restarted", "absent"]
+  tags:
+    - role::docker_sandbox
+    - role::docker_sandbox::verify

@@ -1,0 +1,16 @@
+---
+# Role tasks
+
+- name: defaulting docker sandbox from docker_presets role
+  set_fact:
+    docker_sandbox_images: >-
+      {{ docker_presets_images }}
+    docker_sandbox_containers: >-
+      {{ docker_presets_containers | docker_presets_randomize_names }}
+  when:
+    - docker_sandbox_images | length == 0 or docker_sandbox_containers == 0
+    - docker_presets_images | default([]) | length > 0
+    - docker_presets_containers | default([]) | length > 0
+  tags:
+    - role::docker_sandbox
+    - role::docker_sandbox::presets

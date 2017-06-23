@@ -17,7 +17,7 @@ Also, the role setup the following facts during execution:
 - docker_sandbox_images: contains the list of docker images provisioned on the sandbox.
 - docker_sandbox_containers: contains the list of randomized docker containers provisioned on the sandbox.
 - docker_sandbox_inventory: contains the path to a inventory file with the docker containers deployed in the sandbox.
-- docker_sandbox_test_result: contains the result of the idempotence tests.
+- docker_sandbox_idempotence_result: contains the result of the idempotence tests.
 
 ## Dependencies
 
@@ -38,7 +38,7 @@ This is an example playbook:
   tasks:
     - name: assert that idempotence test was ok
       assert:
-        that: not docker_sandbox_test_result | failed
+        that: not docker_sandbox_idempotence_result | failed
 
 - name: simple idempotence test
   hosts: docker_sandbox_containers

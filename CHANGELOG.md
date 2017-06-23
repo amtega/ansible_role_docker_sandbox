@@ -28,4 +28,9 @@
 
 ## 2017-06-22
 
-- Adddd mechanism to cleanup stalled containers based on playbook
+- Added mechanism to cleanup stalled containers based on playbook.
+
+## 2017-06-23
+
+- Fixed bug in cleanup of stalled docker containers.
+- Refactored tasks in several files.

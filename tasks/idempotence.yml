@@ -1,0 +1,24 @@
+---
+# Idempotence test tasks
+
+- block:
+
+  - name: run idempotence test
+    include_role:
+      name: idempotence_tester
+    vars:
+      idempotence_tester_inventory: "{{ docker_sandbox_inventory }}"
+      idempotence_tester_tag: "{{ docker_sandbox_idempotence_test_tag }}"
+      idempotence_tester_group: "{{ docker_sandbox_group }}"
+    when:
+      - docker_sandbox_state in ["started", "restarted"]
+      - docker_sandbox_idempotence_test
+      - docker_sandbox_inventory | length > 0
+
+  - name: setup fact to store idempotence test result
+    set_fact:
+      docker_sandbox_idempotence_result: "{{ idempotence_tester_test_result }}"
+
+  tags:
+    - role::docker_sandbox
+    - role::docker_sandbox::idempotence
