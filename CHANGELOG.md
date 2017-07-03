@@ -34,3 +34,7 @@
 
 - Fixed bug in cleanup of stalled docker containers.
 - Refactored tasks in several files.
+
+## 2017-07-03
+
+- Added support to restart or not the docker containers after running idempotence tests.

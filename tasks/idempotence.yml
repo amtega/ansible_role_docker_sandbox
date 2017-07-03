@@ -3,21 +3,36 @@
 
 - block:
 
-  - name: run idempotence test
-    include_role:
-      name: idempotence_tester
-    vars:
-      idempotence_tester_inventory: "{{ docker_sandbox_inventory }}"
-      idempotence_tester_tag: "{{ docker_sandbox_idempotence_test_tag }}"
-      idempotence_tester_group: "{{ docker_sandbox_group }}"
+  - block:
+
+    - name: run idempotence test
+      include_role:
+        name: idempotence_tester
+      vars:
+        idempotence_tester_inventory: "{{ docker_sandbox_inventory }}"
+        idempotence_tester_tag: "{{ docker_sandbox_idempotence_test_tag }}"
+        idempotence_tester_group: "{{ docker_sandbox_group }}"
+
+    - name: setup fact to store idempotence test result
+      set_fact:
+        docker_sandbox_idempotence_result: >-
+          {{ idempotence_tester_test_result }}
+
     when:
       - docker_sandbox_state in ["started", "restarted"]
       - docker_sandbox_idempotence_test
       - docker_sandbox_inventory | length > 0
 
-  - name: setup fact to store idempotence test result
-    set_fact:
-      docker_sandbox_idempotence_result: "{{ idempotence_tester_test_result }}"
+  - name: restart docker containers after running idempotence test
+    include: provision.yml
+    static: false
+    vars:
+      docker_sandbox_state: restarted
+    when:
+      - docker_sandbox_state in ["started", "restarted"]
+      - docker_sandbox_idempotence_test
+      - docker_sandbox_inventory | length > 0
+      - docker_sandbox_idempotence_test_restart_after
 
   tags:
     - role::docker_sandbox

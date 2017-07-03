@@ -33,6 +33,11 @@ docker_sandbox_idempotence_test: true
 
 docker_sandbox_idempotence_test_tag: idempotence
 
+# Indicate if the provisioned containers must be restarted after running the
+# idempotence test.
+
+docker_sandbox_idempotence_test_restart_after: true
+
 # Before setup the sandbox remove previous containers created with the same
 # parent process id than actual. Be warned that this option may cause problems
 # if you launch several sandboxes in parallel.

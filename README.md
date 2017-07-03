@@ -46,7 +46,7 @@ This is an example playbook:
     - name: create an empty file
       copy:
         src: /etc/issue
-        dest: /tmp/
+        dest: /tmp/issue
         force: no
   tags:
     - idempotence

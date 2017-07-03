@@ -12,16 +12,54 @@
       assert:
         that: not docker_sandbox_idempotence_result | failed
 
-- name: simple idempotence test
+- name: create file for tesing
   hosts: docker_sandbox_containers
   tasks:
-    - name: create an empty file
+    - name: create testing file
       copy:
         src: /etc/issue
-        dest: /tmp/
+        dest: /tmp/issue
         force: no
   tags:
     - idempotence
+
+- name: test enabling docker containers restart after running idempotence test
+  hosts: localhost
+  roles:
+    - role: docker_sandbox
+      docker_sandbox_state: restarted
+      docker_sandbox_idempotence_test_restart_after: true
+
+- name: test docker containers restart after running idempotence test
+  hosts: docker_sandbox_containers
+  tasks:
+    - name: check /tmp/issue file
+      stat:
+        path: /tmp/issue
+      register: check_tmp_issue_result
+
+    - name: check /tmp/issue file does not exist
+      assert:
+        that: not check_tmp_issue_result.stat.exists
+
+- name: test disabling docker containers restart after running idempotence test
+  hosts: localhost
+  roles:
+    - role: docker_sandbox
+      docker_sandbox_state: restarted
+      docker_sandbox_idempotence_test_restart_after: false
+
+- name: test docker containers does not restart after running idempotence test
+  hosts: docker_sandbox_containers
+  tasks:
+    - name: check /tmp/issue file
+      stat:
+        path: /tmp/issue
+      register: check_tmp_issue_result
+
+    - name: check /tmp/issue file does not exist
+      assert:
+        that: check_tmp_issue_result.stat.exists
 
 - name: test cleanup by ppid
   hosts: localhost
