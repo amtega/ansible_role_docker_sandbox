@@ -38,3 +38,7 @@
 ## 2017-07-03
 
 - Added support to restart or not the docker containers after running idempotence tests.
+
+## 2017-09-15
+
+- Improved tests.

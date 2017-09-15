@@ -17,8 +17,8 @@
   tasks:
     - name: create testing file
       copy:
-        src: /etc/issue
-        dest: /tmp/issue
+        content: ""
+        dest: /tmp/emptyfile
         force: no
   tags:
     - idempotence
@@ -33,14 +33,14 @@
 - name: test docker containers restart after running idempotence test
   hosts: docker_sandbox_containers
   tasks:
-    - name: check /tmp/issue file
+    - name: check /tmp/emptyfile file
       stat:
-        path: /tmp/issue
-      register: check_tmp_issue_result
+        path: /tmp/emptyfile
+      register: check_emptyfile_result
 
-    - name: check /tmp/issue file does not exist
+    - name: check emptyfile file does not exist
       assert:
-        that: not check_tmp_issue_result.stat.exists
+        that: not check_emptyfile_result.stat.exists
 
 - name: test disabling docker containers restart after running idempotence test
   hosts: localhost
@@ -52,14 +52,14 @@
 - name: test docker containers does not restart after running idempotence test
   hosts: docker_sandbox_containers
   tasks:
-    - name: check /tmp/issue file
+    - name: check /tmp/emptyfile file
       stat:
-        path: /tmp/issue
-      register: check_tmp_issue_result
+        path: /tmp/emptyfile
+      register: check_emptyfile_result
 
-    - name: check /tmp/issue file does not exist
+    - name: check /tmp/emptyfile file does not exist
       assert:
-        that: check_tmp_issue_result.stat.exists
+        that: check_emptyfile_result.stat.exists
 
 - name: test cleanup by ppid
   hosts: localhost
