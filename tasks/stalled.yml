@@ -22,6 +22,7 @@
     changed_when: false
     when: docker_sandbox_cleanup_by_ppid
     register: docker_sandbox_containers_by_ppid_result
+    check_mode: no
 
   - name: search previous dockers containers created by same user
     shell: >-
@@ -33,6 +34,7 @@
     changed_when: false
     when: docker_sandbox_cleanup_by_user
     register: docker_sandbox_containers_by_user_result
+    check_mode: no
 
   - name: search previous dockers containers created by same playbook
     shell: >-
@@ -41,6 +43,7 @@
     changed_when: false
     when: docker_sandbox_cleanup_by_playbook
     register: docker_sandbox_containers_by_playbook_result
+    check_mode: no
 
   - name: remove stalled dockers containers
     docker_container:

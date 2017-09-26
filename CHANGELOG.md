@@ -42,3 +42,7 @@
 ## 2017-09-15
 
 - Improved tests.
+
+## 2017-09-25
+
+- Improved dry run support.
