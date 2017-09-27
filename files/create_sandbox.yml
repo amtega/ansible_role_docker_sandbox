@@ -1,0 +1,12 @@
+---
+# Create a sandbox environment
+
+- name: create sandbox environment
+  hosts: localhost
+  roles:
+    - role: docker_presets
+    - role: docker_sandbox
+      docker_sandbox_state: started
+      docker_sandbox_idempotence_test: false
+  tasks:
+    - debug: var=docker_sandbox_inventory

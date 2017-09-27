@@ -46,3 +46,7 @@
 ## 2017-09-25
 
 - Improved dry run support.
+
+## 2017-09-27
+
+- Added two sample playbooks to create and cleanup a sandbox.
