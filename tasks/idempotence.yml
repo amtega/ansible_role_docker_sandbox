@@ -24,8 +24,7 @@
       - docker_sandbox_inventory | length > 0
 
   - name: restart docker containers after running idempotence test
-    include: provision.yml
-    static: false
+    include_tasks: provision.yml
     vars:
       docker_sandbox_state: restarted
     when:

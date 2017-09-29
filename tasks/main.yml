@@ -2,37 +2,37 @@
 # Role tasks
 
 - name: verify sandbox parameters
-  include: verify.yml
+  import_tasks: verify.yml
   tags:
     - role::docker_sandbox
     - role::docker_sandbox::verify
 
 - name: load sandbox presets
-  include: presets.yml
+  import_tasks: presets.yml
   tags:
     - role::docker_sandbox
     - role::docker_sandbox::presets
 
 - name: manage stalled containers
-  include: stalled.yml
+  import_tasks: stalled.yml
   tags:
     - role::docker_sandbox
     - role::docker_sandbox::stalled
 
 - name: setup sandbox inventory
-  include: inventory.yml
+  import_tasks: inventory.yml
   tags:
     - role::docker_sandbox
     - role::docker_sandbox::inventory
 
 - name: setup docker sandbox environment
-  include: provision.yml
+  import_tasks: provision.yml
   tags:
     - role::docker_sandbox
     - role::docker_sandbox::provision
 
 - name: run idempotence test
-  include: idempotence.yml
+  import_tasks: idempotence.yml
   tags:
     - role::docker_sandbox
     - role::docker_sandbox::idempotence

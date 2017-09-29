@@ -50,3 +50,8 @@
 ## 2017-09-27
 
 - Added two sample playbooks to create and cleanup a sandbox.
+
+## 2017-09-29
+
+- Refactored include directives by include_tasks / import_tasks.
+- Updated documentation.
