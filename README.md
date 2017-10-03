@@ -73,7 +73,7 @@ ok: [localhost] => {
 }
 ```
 
-You can work with this sandbox passing this inventory path to ansible-playbook using "-i" flag:
+You can work with this sandbox passing this inventory path to ansible-playbook using "-e" flag to fill the variable `docker_sandbox_inventory`:
 
 ```
 ansible-playbook main.yml -i /tmp/ansible.oAxX3B.inventory
@@ -82,7 +82,7 @@ ansible-playbook main.yml -i /tmp/ansible.oAxX3B.inventory
 When you want to drop the sandbox use the provided cleanup playbook:
 
 ```
-ansible-playbook files/cleanup_sandbox.yml -i /tmp/ansible.oAxX3B.inventory
+ansible-playbook files/cleanup_sandbox.yml -e "docker_sandbox_inventory=/tmp/ansible.oAxX3B.inventory"
 ```
 
 ## Testing

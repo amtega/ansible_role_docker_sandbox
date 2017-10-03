@@ -55,3 +55,8 @@
 
 - Refactored include directives by include_tasks / import_tasks.
 - Updated documentation.
+
+## 2017-10-02
+
+- Fixed files/cleanup_sandbox.yml.
+- Updated documentation.

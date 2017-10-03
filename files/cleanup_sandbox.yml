@@ -3,8 +3,6 @@
 
 - name: cleanup docker docker sandbox
   hosts: localhost
-  vars:
-    docker_sandbox_inventory: "{{ inventory_file }}"
   roles:
     - role: docker_sandbox
       docker_sandbox_state: absent
