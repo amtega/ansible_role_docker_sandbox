@@ -60,3 +60,9 @@
 
 - Fixed files/cleanup_sandbox.yml.
 - Updated documentation.
+
+## 2017-10-19
+
+- Now inventory file can be specified as a role variable.
+- Refactored "restarted" state to "recreated".
+- Removed docker_sandbox_idempotence_test_tag variable.

@@ -8,5 +8,8 @@
     - role: docker_sandbox
       docker_sandbox_state: started
       docker_sandbox_idempotence_test: false
+      docker_sandbox_cleanup_by_ppid: false
+      docker_sandbox_cleanup_by_user: false
+      docker_sandbox_cleanup_by_playbook: false
   tasks:
     - debug: var=docker_sandbox_inventory

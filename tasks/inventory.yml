@@ -16,7 +16,9 @@
         docker_sandbox_inventory: >-
           {{ docker_sandbox_create_inventory_result.path }}
 
-    when: docker_sandbox_state in ["started", "restarted"]
+    when:
+      - docker_sandbox_state in ["started", "recreated"]
+      - docker_sandbox_inventory is none
 
   - name: delete temporary file with docker sandbox containers inventory
     file:

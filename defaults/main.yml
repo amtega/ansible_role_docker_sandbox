@@ -17,26 +17,26 @@ docker_sandbox_containers: []
 
 docker_sandbox_group: docker_sandbox_containers
 
-# State of the docker sandbox. Can be started, restarted or absent.
-# The difference between started and restarted is that the last will not
+# State of the docker sandbox. Can be started, recreated or absent.
+# The difference between started and recreated is that the last will not
 # provisione the images, something useful if you only want to refresh the
 # containers.
 
 docker_sandbox_state: started
 
+# Indicate the path to the inventory file to contain the docker containers
+# provisioned by the role. If empty one will be created with random name
+
+docker_sandbox_inventory:
+
 # Indicate if the idempotence test must be run using idempotence_tester role.
 
 docker_sandbox_idempotence_test: true
 
-# Indicate the tag to use to limit the scope of the tasks intended to be run
-# during the idempotence test.
-
-docker_sandbox_idempotence_test_tag: idempotence
-
-# Indicate if the provisioned containers must be restarted after running the
+# Indicate if the provisioned containers must be recreated after running the
 # idempotence test.
 
-docker_sandbox_idempotence_test_restart_after: true
+docker_sandbox_idempotence_test_recreate_after: true
 
 # Before setup the sandbox remove previous containers created with the same
 # parent process id than actual. Be warned that this option may cause problems

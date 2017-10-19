@@ -21,7 +21,8 @@ Also, the role setup the following facts during execution:
 
 ## Dependencies
 
-This role depends on 'docker_provisioner' and 'idempotence_tester' roles.
+This role depends on 'docker_provisioner' and 'idempotence_tester' roles. You
+can tune the behaviour of this dependant roles with their respective settings.
 
 ## Example Playbook
 

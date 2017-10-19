@@ -7,59 +7,49 @@
     - role: docker_presets
     - role: docker_sandbox
       docker_sandbox_state: started
+      docker_sandbox_idempotence_test_recreate_after: true
   tasks:
     - name: assert that idempotence test was ok
       assert:
         that: not docker_sandbox_idempotence_result | failed
 
-- name: create file for tesing
+- name: test containers recreation after running idempotence test
   hosts: docker_sandbox_containers
   tasks:
-    - name: create testing file
-      copy:
-        content: ""
-        dest: /tmp/emptyfile
-        force: no
-  tags:
-    - idempotence
+    - name: check /tmp/testfile file
+      stat:
+        path: /tmp/testfile
+      register: check_testfile_result
 
-- name: test enabling docker containers restart after running idempotence test
+    - name: check testfile file does not exist
+      assert:
+        that: not check_testfile_result.stat.exists
+
+- name: test disabling docker containers recreation idempotence test
   hosts: localhost
   roles:
     - role: docker_sandbox
-      docker_sandbox_state: restarted
-      docker_sandbox_idempotence_test_restart_after: true
+      docker_sandbox_state: recreated
+      docker_sandbox_idempotence_test_recreate_after: false
 
-- name: test docker containers restart after running idempotence test
+- name: test containers has not been recreated after idempotence test
   hosts: docker_sandbox_containers
   tasks:
-    - name: check /tmp/emptyfile file
+    - name: check /tmp/testfile file
       stat:
-        path: /tmp/emptyfile
-      register: check_emptyfile_result
+        path: /tmp/testfile
+      register: check_testfile_result
 
-    - name: check emptyfile file does not exist
+    - name: check /tmp/testfile file exists
       assert:
-        that: not check_emptyfile_result.stat.exists
+        that: check_testfile_result.stat.exists
 
-- name: test disabling docker containers restart after running idempotence test
+- name: test with explicit inventory file
   hosts: localhost
   roles:
     - role: docker_sandbox
-      docker_sandbox_state: restarted
-      docker_sandbox_idempotence_test_restart_after: false
-
-- name: test docker containers does not restart after running idempotence test
-  hosts: docker_sandbox_containers
-  tasks:
-    - name: check /tmp/emptyfile file
-      stat:
-        path: /tmp/emptyfile
-      register: check_emptyfile_result
-
-    - name: check /tmp/emptyfile file does not exist
-      assert:
-        that: check_emptyfile_result.stat.exists
+      docker_sandbox_state: recreated
+      docker_sandbox_inventory: "./docker_sandbox_inventory"
 
 - name: test cleanup by ppid
   hosts: localhost
@@ -69,6 +59,16 @@
       docker_sandbox_cleanup_by_user: false
       docker_sandbox_cleanup_by_playbook: false
   tasks:
+    - name: search explicit inventory from previous test
+      stat:
+        path: "./docker_sandbox_inventory"
+      register: check_explicit_inventory_result
+
+    - name: check explicit inventory from previous test does not exist
+      assert:
+        that:
+          - not check_explicit_inventory_result.stat.exists
+
     - name: search running docker containers created by the test
       shell: >-
         docker ps -a --format='{''{.Names}''}'
@@ -129,6 +129,17 @@
       assert:
        that: item in docker_sandbox_containers | map(attribute='name') | list
       with_items: "{{ search_test_containers_result.stdout_lines }}"
+
+- name: create file for testing
+  hosts: docker_sandbox_containers
+  tasks:
+    - name: create testing file
+      copy:
+        content: "Hello World"
+        dest: /tmp/testfile
+        force: no
+  tags:
+    - idempotence
 
 - name: cleanup docker docker sandbox
   hosts: localhost

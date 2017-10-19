@@ -10,7 +10,6 @@
         name: idempotence_tester
       vars:
         idempotence_tester_inventory: "{{ docker_sandbox_inventory }}"
-        idempotence_tester_tag: "{{ docker_sandbox_idempotence_test_tag }}"
         idempotence_tester_group: "{{ docker_sandbox_group }}"
 
     - name: setup fact to store idempotence test result
@@ -19,19 +18,20 @@
           {{ idempotence_tester_test_result }}
 
     when:
-      - docker_sandbox_state in ["started", "restarted"]
+      - docker_sandbox_state in ["started", "recreated"]
       - docker_sandbox_idempotence_test
       - docker_sandbox_inventory | length > 0
 
-  - name: restart docker containers after running idempotence test
+  - name: recreate docker containers after running idempotence test
     include_tasks: provision.yml
     vars:
-      docker_sandbox_state: restarted
+      docker_sandbox_images_override: []
+      docker_sandbox_state_override: restarted
     when:
-      - docker_sandbox_state in ["started", "restarted"]
+      - docker_sandbox_state in ["started", "recreated"]
       - docker_sandbox_idempotence_test
       - docker_sandbox_inventory | length > 0
-      - docker_sandbox_idempotence_test_restart_after
+      - docker_sandbox_idempotence_test_recreate_after
 
   tags:
     - role::docker_sandbox
