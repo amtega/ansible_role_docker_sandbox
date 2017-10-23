@@ -1,10 +1,70 @@
 ---
 # Tasks for tesing role
 
-- name: test docker_sandbox role
+- name: test sandbox with explicit inventory file
   hosts: localhost
   roles:
     - role: docker_presets
+    - role: docker_sandbox
+      docker_sandbox_state: started
+      docker_sandbox_inventory: "./docker_sandbox_inventory"
+      docker_sandbox_idempotence_test: false
+      docker_sandbox_cleanup_by_ppid: true
+      docker_sandbox_cleanup_by_user: true
+      docker_sandbox_cleanup_by_playbook: true
+      docker_sandbox_cleanup_by_inventory: true
+  tasks:
+    - name: emtpy sandbox images and containers facts to prepare next test
+      set_fact:
+        docker_sandbox_images: []
+        docker_sandbox_containers: []
+
+- name: test cleanup by inventory file
+  hosts: localhost
+  roles:
+    - role: docker_sandbox
+      docker_sandbox_inventory: "./docker_sandbox_inventory"
+      docker_sandbox_idempotence_test: false
+      docker_sandbox_cleanup_by_ppid: false
+      docker_sandbox_cleanup_by_user: false
+      docker_sandbox_cleanup_by_playbook: false
+      docker_sandbox_cleanup_by_inventory: true
+  tasks:
+    - name: search running docker containers created by the test
+      shell: >-
+        docker ps -a --format='{''{.Names}''}'
+        --filter label=docker_sandbox_ppid={{ lookup(
+          'pipe',
+          'ps -o ppid= -p `ps -o ppid= -p $PPID`')
+          | trim }}
+      changed_when: false
+      register: search_test_containers_result
+
+    - name: verify only running docker containers are the last ones created
+      assert:
+       that: item in docker_sandbox_containers | map(attribute='name') | list
+      with_items: "{{ search_test_containers_result.stdout_lines }}"
+
+- name: test cleanup of sandbox with explicit inventory file
+  hosts: localhost
+  roles:
+    - role: docker_sandbox
+      docker_sandbox_state: absent
+      docker_sandbox_inventory: "./docker_sandbox_inventory"
+  tasks:
+    - name: search explicit inventory from previous test
+      stat:
+        path: "./docker_sandbox_inventory"
+      register: check_explicit_inventory_result
+
+    - name: check explicit inventory from previous test does not exist
+      assert:
+        that:
+          - not check_explicit_inventory_result.stat.exists
+
+- name: test docker_sandbox role with automatic inventory file
+  hosts: localhost
+  roles:
     - role: docker_sandbox
       docker_sandbox_state: started
       docker_sandbox_idempotence_test_recreate_after: true
@@ -44,31 +104,20 @@
       assert:
         that: check_testfile_result.stat.exists
 
-- name: test with explicit inventory file
-  hosts: localhost
-  roles:
-    - role: docker_sandbox
-      docker_sandbox_state: recreated
-      docker_sandbox_inventory: "./docker_sandbox_inventory"
+    - name: emtpy sandbox images and containers facts to prepare next test
+      set_fact:
+        docker_sandbox_images: []
+        docker_sandbox_containers: []
 
 - name: test cleanup by ppid
   hosts: localhost
   roles:
     - role: docker_sandbox
+      docker_sandbox_idempotence_test: false
       docker_sandbox_cleanup_by_ppid: true
       docker_sandbox_cleanup_by_user: false
       docker_sandbox_cleanup_by_playbook: false
   tasks:
-    - name: search explicit inventory from previous test
-      stat:
-        path: "./docker_sandbox_inventory"
-      register: check_explicit_inventory_result
-
-    - name: check explicit inventory from previous test does not exist
-      assert:
-        that:
-          - not check_explicit_inventory_result.stat.exists
-
     - name: search running docker containers created by the test
       shell: >-
         docker ps -a --format='{''{.Names}''}'
@@ -84,10 +133,16 @@
        that: item in docker_sandbox_containers | map(attribute='name') | list
       with_items: "{{ search_test_containers_result.stdout_lines }}"
 
+    - name: emtpy sandbox images and containers facts to prepare next test
+      set_fact:
+        docker_sandbox_images: []
+        docker_sandbox_containers: []
+
 - name: test cleanup by user
   hosts: localhost
   roles:
     - role: docker_sandbox
+      docker_sandbox_idempotence_test: false
       docker_sandbox_cleanup_by_ppid: false
       docker_sandbox_cleanup_by_user: true
       docker_sandbox_cleanup_by_playbook: false
@@ -107,10 +162,16 @@
        that: item in docker_sandbox_containers | map(attribute='name') | list
       with_items: "{{ search_test_containers_result.stdout_lines }}"
 
+    - name: emtpy sandbox images and containers facts to prepare next test
+      set_fact:
+        docker_sandbox_images: []
+        docker_sandbox_containers: []
+
 - name: test cleanup by playbook
   hosts: localhost
   roles:
     - role: docker_sandbox
+      docker_sandbox_idempotence_test: false
       docker_sandbox_cleanup_by_ppid: false
       docker_sandbox_cleanup_by_user: false
       docker_sandbox_cleanup_by_playbook: true

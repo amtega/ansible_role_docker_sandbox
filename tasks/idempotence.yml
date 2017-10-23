@@ -26,7 +26,7 @@
     include_tasks: provision.yml
     vars:
       docker_sandbox_images_override: []
-      docker_sandbox_state_override: restarted
+      docker_sandbox_state_override: recreated
     when:
       - docker_sandbox_state in ["started", "recreated"]
       - docker_sandbox_idempotence_test

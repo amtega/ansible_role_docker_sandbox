@@ -45,12 +45,25 @@
     register: docker_sandbox_containers_by_playbook_result
     check_mode: no
 
+  - name: search previous dockers containers created with same inventory
+    shell: >-
+      docker ps -a --format='{''{.Names}''}'
+      --filter label=docker_sandbox_inventory={{ docker_sandbox_inventory }}
+    changed_when: false
+    when: docker_sandbox_cleanup_by_inventory
+    register: docker_sandbox_containers_by_inventory_result
+    check_mode: no
+
   - name: remove stalled dockers containers
     docker_container:
       name: "{{ item }}"
       state: absent
       force_kill: true
-    when: docker_sandbox_cleanup_by_ppid or docker_sandbox_cleanup_by_user
+    when: >-
+      docker_sandbox_cleanup_by_ppid
+      or docker_sandbox_cleanup_by_user
+      or docker_sandbox_cleanup_by_playbook
+      or docker_sandbox_cleanup_by_inventory
     with_items: >-
       {{ docker_sandbox_containers_by_ppid_result.stdout_lines | default([])
         | union(
@@ -58,6 +71,9 @@
               | default([]))
         | union(
             docker_sandbox_containers_by_playbook_result.stdout_lines
+              | default([]))
+        | union(
+            docker_sandbox_containers_by_inventory_result.stdout_lines
               | default([]))
         | difference(
             docker_sandbox_containers | map(attribute='name') | list)

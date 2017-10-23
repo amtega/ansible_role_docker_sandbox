@@ -7,12 +7,12 @@
     include_role:
       name: docker_provisioner
     vars:
+      images: >-
+        {{ docker_sandbox_images_override | default(docker_sandbox_images) }}
+      container_state: >-
+        {{ docker_sandbox_state_override | default(docker_sandbox_state) }}
       docker_provisioner_images: >-
-        {{ (docker_sandbox_state_override | default(docker_sandbox_state)
-              in ["recreated", "absent"])
-                | ternary([],
-                          docker_sandbox_images_override
-                            | default(docker_sandbox_images)) }}
+        {{ (container_state in ["recreated", "absent"]) | ternary([], images) }}
       docker_provisioner_image_state: present
       docker_provisioner_image_force: true
       docker_provisioner_containers: "{{ docker_sandbox_containers }}"
@@ -22,20 +22,18 @@
         docker_sandbox_user: >-
           {{ lookup('pipe', 'echo $USER') | trim }}
         docker_sandbox_playbook: "{{ docker_sandbox_playbook }}"
+        docker_sandbox_inventory: "{{ docker_sandbox_inventory }}"
       docker_provisioner_container_groups: ["{{ docker_sandbox_group }}"]
       docker_provisioner_container_tty: false
       docker_provisioner_inventory: >-
-        {{ (docker_sandbox_state_override | default(docker_sandbox_state)
-              not in ["started", "recreated"])
-                | ternary("", docker_sandbox_inventory) }}
+        {{ (container_state in ["started", "recreated"])
+              | ternary(docker_sandbox_inventory, "") }}
       docker_provisioner_container_state: >-
-        {{ (docker_sandbox_state_override | default(docker_sandbox_state)
-              in ["recreated"])
-                | ternary("started", docker_sandbox_state) }}
+        {{ (container_state in ["recreated"])
+              | ternary("started", docker_sandbox_state) }}
       docker_provisioner_container_restart: true
       docker_provisioner_container_recreate: >-
-        {{ (docker_sandbox_state_override | default(docker_sandbox_state)
-              in ["recreated"]) | ternary(true, false) }}
+        {{ (container_state in ["recreated"]) | ternary(true, false) }}
 
   tags:
     - role::docker_sandbox

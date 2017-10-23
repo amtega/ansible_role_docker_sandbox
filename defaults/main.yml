@@ -40,18 +40,29 @@ docker_sandbox_idempotence_test_recreate_after: true
 
 # Before setup the sandbox remove previous containers created with the same
 # parent process id than actual. Be warned that this option may cause problems
-# if you launch several sandboxes in parallel.
+# if you launch several sandboxes in parallel. By default no cleanup will be
+# done if an inventory file is specified in 'docker_sandbox_inventory'
 
-docker_sandbox_cleanup_by_ppid: true
+docker_sandbox_cleanup_by_ppid: "{{ docker_sandbox_inventory is none }}"
 
 # Before setup the sandbox remove previous containers created with the same
 # user than the actual. Be warned that this option may cause problems
-# if you launch several sandboxes in parallel.
+# if you launch several sandboxes in parallel. By default no cleanup will be
+# done if an inventory file is specified in 'docker_sandbox_inventory'
 
-docker_sandbox_cleanup_by_user: true
+docker_sandbox_cleanup_by_user: "{{ docker_sandbox_inventory is none }}"
 
 # Before setup the sandbox remove previous containers created with the same
 # playbook than the actual. Be warned that this option may cause problems
-# if you launch several sandboxes in parallel.
+# if you launch several sandboxes in parallel. By default no cleanup will be
+# done if an inventory file is specified in 'docker_sandbox_inventory'
 
-docker_sandbox_cleanup_by_playbook: true
+docker_sandbox_cleanup_by_playbook: "{{ docker_sandbox_inventory is none }}"
+
+# Before setup the sandbox remove previous containers created with the same
+# inventory than the actual. Be warned that this option may cause problems
+# if you launch several sandboxes in parallel. By default cleanup will be
+# done if an inventory file is specified in 'docker_sandbox_inventory'
+
+docker_sandbox_cleanup_by_inventory: >-
+  {{ docker_sandbox_inventory is not none }}

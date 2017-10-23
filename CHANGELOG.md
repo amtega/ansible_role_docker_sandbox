@@ -66,3 +66,10 @@
 - Now inventory file can be specified as a role variable.
 - Refactored "restarted" state to "recreated".
 - Removed docker_sandbox_idempotence_test_tag variable.
+
+## 2017-10-23
+
+- Fixed big with idempotence test docker recreation.
+- Fixed tests.
+- Change defaults of 'docker_sandbox_cleanup_*' variables to disable them if and inventory is specified in 'docker_sandbox_inventory'.
+- Added 'docker_sandbox_cleanup_by_playbook' role variable.
