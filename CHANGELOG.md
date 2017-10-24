@@ -73,3 +73,8 @@
 - Fixed tests.
 - Change defaults of 'docker_sandbox_cleanup_*' variables to disable them if and inventory is specified in 'docker_sandbox_inventory'.
 - Added 'docker_sandbox_cleanup_by_playbook' role variable.
+
+## 2017-10-24
+
+- Fixed bugs.
+- Fixed tests.

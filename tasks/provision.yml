@@ -7,12 +7,13 @@
     include_role:
       name: docker_provisioner
     vars:
-      images: >-
+      docker_sandbox_final_images: >-
         {{ docker_sandbox_images_override | default(docker_sandbox_images) }}
       container_state: >-
         {{ docker_sandbox_state_override | default(docker_sandbox_state) }}
       docker_provisioner_images: >-
-        {{ (container_state in ["recreated", "absent"]) | ternary([], images) }}
+        {{ (container_state in ["recreated", "absent"])
+              | ternary([], docker_sandbox_final_images) }}
       docker_provisioner_image_state: present
       docker_provisioner_image_force: true
       docker_provisioner_containers: "{{ docker_sandbox_containers }}"
