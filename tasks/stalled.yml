@@ -54,7 +54,7 @@
     register: docker_sandbox_containers_by_inventory_result
     check_mode: no
 
-  - name: remove stalled dockers containers
+  - name: cleanup previous docker containers
     docker_container:
       name: "{{ item }}"
       state: absent

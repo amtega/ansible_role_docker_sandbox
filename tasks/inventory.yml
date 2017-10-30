@@ -18,7 +18,9 @@
 
     when:
       - docker_sandbox_state in ["started", "recreated"]
-      - docker_sandbox_inventory is none
+      - >-
+        docker_sandbox_inventory is none
+        or docker_sandbox_inventory | length == 0
 
   - name: delete temporary file with docker sandbox containers inventory
     file:

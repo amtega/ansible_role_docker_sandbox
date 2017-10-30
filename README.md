@@ -59,7 +59,7 @@ This is an example playbook:
       docker_sandbox_state: absent
 ```
 
-If you want to create a temporary sandbox to work you can use the two sample playbooks provided in the `files` dir. First call the create sandbox playbook:
+If you want to create a temporary sandbox to work you can use the two sample playbooks provided in the `files` dir. First call the create sandbox playbook.
 
 ```
 ansible-playbook files/create_sandbox.yml
@@ -80,7 +80,7 @@ You can work with this sandbox passing this inventory path to ansible-playbook u
 ansible-playbook main.yml -i /tmp/ansible.oAxX3B.inventory
 ```
 
-When you want to drop the sandbox use the provided cleanup playbook:
+When you want to drop the sandbox use the provided cleanup playbook passing the docker_sandbox_inventory variable in the command line or entering it in the prompt that will be showed:
 
 ```
 ansible-playbook files/cleanup_sandbox.yml -e "docker_sandbox_inventory=/tmp/ansible.oAxX3B.inventory"

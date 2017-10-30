@@ -78,3 +78,8 @@
 
 - Fixed bugs.
 - Fixed tests.
+
+## 2017-10-30
+
+- Improved tests.
+- Improved create_sandbox.yml and cleanup_sandbox.yml playbooks.

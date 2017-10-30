@@ -3,6 +3,12 @@
 
 - name: create sandbox environment
   hosts: localhost
+  vars_prompt:
+    - name: "docker_sandbox_inventory"
+      prompt: >-
+        Enter absolute path to docker sandbox inventory file
+        (if not given a random one will be created)
+      private: no
   roles:
     - role: docker_presets
     - role: docker_sandbox
