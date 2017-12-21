@@ -3,7 +3,7 @@
 
 - name: provisione docker sandbox environment
   include_role:
-    name: docker_provisioner
+    name: amtega.docker_provisioner
   vars:
     docker_sandbox_final_images: >-
       {{ docker_sandbox_images_override | default(docker_sandbox_images) }}
