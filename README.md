@@ -102,6 +102,7 @@ If you have docker engine configured you can avoid running dependant 'docker_eng
 ```shell
 $ cd docker_sandbox/test
 $ ansible-playbook --skip-tags "role::docker_engine" main.yml
+```
 
 ## License
 
