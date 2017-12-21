@@ -21,10 +21,25 @@
       - docker_sandbox_inventory | length > 0
 
   - name: recreate docker containers after running idempotence test
-    include_tasks: provision.yml
+    include_role:
+      name: amtega.docker_provisioner
     vars:
-      docker_sandbox_images_override: []
-      docker_sandbox_state_override: recreated
+      docker_provisioner_images: []
+      docker_provisioner_containers: "{{ docker_sandbox_containers }}"
+      docker_provisioner_container_labels:
+        docker_sandbox_ppid: >-
+          {{ lookup('pipe', 'ps -o ppid= -p `ps -o ppid= -p $PPID`') | trim }}
+        docker_sandbox_user: >-
+          {{ lookup('pipe', 'echo $USER') | trim }}
+        docker_sandbox_playbook: "{{ docker_sandbox_playbook }}"
+        docker_sandbox_inventory: "{{ docker_sandbox_inventory }}"
+      docker_provisioner_container_groups: ["{{ docker_sandbox_group }}"]
+      docker_provisioner_container_tty: false
+      docker_provisioner_inventory: "{{ docker_sandbox_inventory }}"
+      docker_provisioner_container_state: started
+      docker_provisioner_container_restart: true
+      docker_provisioner_container_recreate: true
+      docker_provisioner_force_kill: true
     when:
       - docker_sandbox_state in ["started", "recreated"]
       - docker_sandbox_idempotence_test
