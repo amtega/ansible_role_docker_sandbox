@@ -5,7 +5,7 @@
   - block:
     - name: run idempotence test
       include_role:
-        name: idempotence_tester
+        name: amtega.idempotence_tester
       vars:
         idempotence_tester_inventory: "{{ docker_sandbox_inventory }}"
         idempotence_tester_group: "{{ docker_sandbox_group }}"
