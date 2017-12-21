@@ -2,9 +2,7 @@
 # Sandbox inventory tasks
 
 - block:
-
   - block:
-
     - name: create temporary file to store docker sandbox containers inventory
       tempfile:
         state: file
