@@ -6,7 +6,7 @@
     name: amtega.docker_provisioner
   vars:
     docker_provisioner_images: >-
-      {{ (docker_sandbox_state in ["absent"])
+      {{ (docker_sandbox_state in ["absent", "recreated"])
          | ternary([], docker_sandbox_images) }}
     docker_provisioner_image_state: present
     docker_provisioner_image_force: true
@@ -21,9 +21,11 @@
     docker_provisioner_container_groups: ["{{ docker_sandbox_group }}"]
     docker_provisioner_container_tty: false
     docker_provisioner_inventory: >-
-      {{ (docker_sandbox_state in ["started"])
+     {{ (docker_sandbox_state in ["started", "recreated"])
          | ternary(docker_sandbox_inventory, "") }}
-    docker_provisioner_container_state: "{{ docker_sandbox_state }}"
+    docker_provisioner_container_state: >-
+       {{ (docker_sandbox_state in ["recreated"])
+          | ternary("started", docker_sandbox_state) }}
     docker_provisioner_container_restart: true
     docker_provisioner_container_recreate: false
     docker_provisioner_force_kill: false
