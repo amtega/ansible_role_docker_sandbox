@@ -2,9 +2,7 @@
 # Idempotence test tasks
 
 - block:
-
   - block:
-
     - name: run idempotence test
       include_role:
         name: idempotence_tester
