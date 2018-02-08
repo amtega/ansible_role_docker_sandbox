@@ -35,8 +35,8 @@ This is an example playbook:
 - name: sample docker_sandbox usage
   hosts: localhost
   roles:
-    - role: docker_presets
-    - role: docker_sandbox
+    - role: amtega.docker_presets
+    - role: amtega.docker_sandbox
       docker_sandbox_state: started
   tasks:
     - name: assert that idempotence test was ok
@@ -93,14 +93,14 @@ ansible-playbook files/cleanup_sandbox.yml -e "docker_sandbox_inventory=/tmp/ans
 Test are based on docker containers. You can run the tests with the following commands:
 
 ```shell
-$ cd docker_sandbox/test
+$ cd amtega.docker_sandbox/test
 $ ansible-playbook main.yml
 ```
 
 If you have docker engine configured you can avoid running dependant 'docker_engine' role (that usually requries root privileges) with the following commands:
 
 ```shell
-$ cd docker_sandbox/test
+$ cd amtega.docker_sandbox/test
 $ ansible-playbook --skip-tags "role::docker_engine" main.yml
 ```
 
