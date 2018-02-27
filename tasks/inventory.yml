@@ -19,11 +19,11 @@
           docker_sandbox_inventory is none
           or docker_sandbox_inventory | length == 0
 
-      - name: delete temporary file with docker sandbox containers inventory
-        file:
-          path: "{{ docker_sandbox_inventory }}"
-          state: absent
-        when: docker_sandbox_state == "absent"
-    tags:
-      - role::docker_sandbox
-      - role::docker_sandbox::inventory
+    - name: delete temporary file with docker sandbox containers inventory
+      file:
+        path: "{{ docker_sandbox_inventory }}"
+        state: absent
+      when: docker_sandbox_state == "absent"
+  tags:
+    - role::docker_sandbox
+    - role::docker_sandbox::inventory
