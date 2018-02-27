@@ -2,30 +2,28 @@
 # Sandbox inventory tasks
 
 - block:
-  - block:
-    - name: create temporary file to store docker sandbox containers inventory
-      tempfile:
-        state: file
-        suffix: .inventory
-      register: docker_sandbox_create_inventory_result
+    - block:
+        - name: create temporary file for docker sandbox containers inventory
+          tempfile:
+            state: file
+            suffix: .inventory
+          register: docker_sandbox_create_inventory_result
 
-    - name: setup fact with path to docker sandbox containers inventory
-      set_fact:
-        docker_sandbox_inventory: >-
-          {{ docker_sandbox_create_inventory_result.path }}
+        - name: setup fact with path to docker sandbox containers inventory
+          set_fact:
+            docker_sandbox_inventory: >-
+              {{ docker_sandbox_create_inventory_result.path }}
+      when:
+        - docker_sandbox_state in ["started", "recreated"]
+        - >-
+          docker_sandbox_inventory is none
+          or docker_sandbox_inventory | length == 0
 
-    when:
-      - docker_sandbox_state in ["started", "recreated"]
-      - >-
-        docker_sandbox_inventory is none
-        or docker_sandbox_inventory | length == 0
-
-  - name: delete temporary file with docker sandbox containers inventory
-    file:
-      path: "{{ docker_sandbox_inventory }}"
-      state: absent
-    when: docker_sandbox_state == "absent"
-
-  tags:
-    - role::docker_sandbox
-    - role::docker_sandbox::inventory
+      - name: delete temporary file with docker sandbox containers inventory
+        file:
+          path: "{{ docker_sandbox_inventory }}"
+          state: absent
+        when: docker_sandbox_state == "absent"
+    tags:
+      - role::docker_sandbox
+      - role::docker_sandbox::inventory
