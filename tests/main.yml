@@ -8,46 +8,46 @@
   tasks:
     - name: setup sandbox config for explicit inventory file test 1
       set_fact:
-        images_explicit_inventory_1: "{{ docker_presets_images }}"
-        containers_explicit_inventory_1: >-
+        images_inventory_1: "{{ docker_presets_images }}"
+        containers_inventory_1: >-
           {{ docker_presets_containers | docker_presets_randomize_names }}
 
     - name: setup sandbox config for explicit inventory file test 2
       set_fact:
-        images_explicit_inventory_2: "{{ docker_presets_images }}"
-        containers_explicit_inventory_2: >-
+        images_inventory_2: "{{ docker_presets_images }}"
+        containers_inventory_2: >-
           {{ docker_presets_containers | docker_presets_randomize_names }}
 
     - name: setup sandbox config for automatic inventory file tests 1
       set_fact:
-        images_automatic_inventory_1: "{{ docker_presets_images }}"
-        containers_automatic_inventory_1: >
+        images_inventory_3: "{{ docker_presets_images }}"
+        containers_inventory_3: >
           {{ docker_presets_containers | docker_presets_randomize_names }}
 
     - name: setup sandbox config for automatic inventory file tests 2
       set_fact:
-        images_automatic_inventory_2: "{{ docker_presets_images }}"
-        containers_automatic_inventory_2: >
+        images_inventory_4: "{{ docker_presets_images }}"
+        containers_inventory_4: >
           {{ docker_presets_containers | docker_presets_randomize_names }}
 
     - name: setup sandbox config for automatic inventory file tests 3
       set_fact:
-        images_automatic_inventory_3: "{{ docker_presets_images }}"
-        containers_automatic_inventory_3: >
+        images_inventory_5: "{{ docker_presets_images }}"
+        containers_inventory_5: >
           {{ docker_presets_containers | docker_presets_randomize_names }}
 
     - name: setup sandbox config for automatic inventory file tests 4
       set_fact:
-        images_automatic_inventory_4: "{{ docker_presets_images }}"
-        containers_automatic_inventory_4: >
+        images_inventory_6: "{{ docker_presets_images }}"
+        containers_inventory_6: >
           {{ docker_presets_containers | docker_presets_randomize_names }}
 
-- name: test sandbox with explicit inventory file
+- name: test disabling idempotence check
   hosts: localhost
   roles:
     - role: amtega.docker_sandbox
-      docker_sandbox_images: "{{ images_explicit_inventory_1 }}"
-      docker_sandbox_containers: "{{ containers_explicit_inventory_1 }}"
+      docker_sandbox_images: "{{ images_inventory_1 }}"
+      docker_sandbox_containers: "{{ containers_inventory_1 }}"
       docker_sandbox_state: started
       docker_sandbox_inventory: "./docker_sandbox_inventory"
       docker_sandbox_group: docker_sandbox_containers_explicit_inventory
@@ -61,8 +61,8 @@
   hosts: localhost
   roles:
     - role: amtega.docker_sandbox
-      docker_sandbox_images: "{{ images_explicit_inventory_2 }}"
-      docker_sandbox_containers: "{{ containers_explicit_inventory_2 }}"
+      docker_sandbox_images: "{{ images_inventory_2 }}"
+      docker_sandbox_containers: "{{ containers_inventory_2 }}"
       docker_sandbox_state: started
       docker_sandbox_inventory: "./docker_sandbox_inventory"
       docker_sandbox_idempotence_test: false
@@ -76,23 +76,22 @@
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_ppid={{ lookup(
           'pipe',
-          'ps -o ppid= -p `ps -o ppid= -p $PPID`')
-                                              | trim }}
+          'ps -o ppid= -p `ps -o ppid= -p $PPID`') | trim }}
       changed_when: false
       register: search_test_containers_result
 
     - name: verify only running docker containers are the last ones created
       assert:
        that: >-
-        item in containers_explicit_inventory_2 | map(attribute='name') | list
+        item in containers_inventory_2 | map(attribute='name') | list
       with_items: "{{ search_test_containers_result.stdout_lines }}"
 
-- name: test cleanup of sandbox with explicit inventory file
+- name: test explicit cleanup with absent state
   hosts: localhost
   roles:
     - role: amtega.docker_sandbox
-      docker_sandbox_images: "{{ images_explicit_inventory_2 }}"
-      docker_sandbox_containers: "{{ containers_explicit_inventory_2 }}"
+      docker_sandbox_images: "{{ images_inventory_2 }}"
+      docker_sandbox_containers: "{{ containers_inventory_2 }}"
       docker_sandbox_state: absent
       docker_sandbox_inventory: "./docker_sandbox_inventory"
   tasks:
@@ -101,19 +100,13 @@
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_ppid={{ lookup(
           'pipe',
-          'ps -o ppid= -p `ps -o ppid= -p $PPID`')
-                                              | trim }}
+          'ps -o ppid= -p `ps -o ppid= -p $PPID`') | trim }}
       changed_when: false
       register: search_test_containers_result
 
     - name: verify there are not running test docker containers
       assert:
-       that: >-
-        item in containers_explicit_inventory_1
-                | union(containers_explicit_inventory_2)
-                | map(attribute='name')
-                | list
-      with_items: "{{ search_test_containers_result.stdout_lines }}"
+       that: search_test_containers_result.stdout_lines | length == 0
 
     - name: search explicit inventory from previous test
       stat:
@@ -125,12 +118,12 @@
         that:
           - not check_explicit_inventory_result.stat.exists
 
-- name: test docker_sandbox role with automatic inventory file
+- name: test enabling recreation after idempotence test
   hosts: localhost
   roles:
     - role: amtega.docker_sandbox
-      docker_sandbox_images: "{{ images_automatic_inventory_1 }}"
-      docker_sandbox_containers: "{{ containers_automatic_inventory_1 }}"
+      docker_sandbox_images: "{{ images_inventory_3 }}"
+      docker_sandbox_containers: "{{ containers_inventory_3 }}"
       docker_sandbox_state: started
       docker_sandbox_group: docker_sandbox_containers_1
       docker_sandbox_idempotence_test_recreate_after: true
@@ -139,7 +132,7 @@
       assert:
         that: not docker_sandbox_idempotence_result | failed
 
-- name: test containers recreation after running idempotence test
+- name: test that containers were recreated after running idempotence test
   hosts: docker_sandbox_containers_1
   tasks:
     - name: check /tmp/testfile file
@@ -151,17 +144,17 @@
       assert:
         that: not check_testfile_result.stat.exists
 
-- name: test disabling docker containers recreation idempotence test
+- name: test disabling containers recreation after idempotence test
   hosts: localhost
   roles:
     - role: amtega.docker_sandbox
-      docker_sandbox_images: "{{ images_automatic_inventory_1 }}"
-      docker_sandbox_containers: "{{ containers_automatic_inventory_1 }}"
+      docker_sandbox_images: "{{ images_inventory_3 }}"
+      docker_sandbox_containers: "{{ containers_inventory_3 }}"
       docker_sandbox_state: recreated
       docker_sandbox_group: docker_sandbox_containers_1
       docker_sandbox_idempotence_test_recreate_after: false
 
-- name: test containers has not been recreated after idempotence test
+- name: test that containers were not recreated after idempotence test
   hosts: docker_sandbox_containers_1
   tasks:
     - name: check /tmp/testfile file
@@ -182,8 +175,8 @@
   hosts: localhost
   roles:
     - role: amtega.docker_sandbox
-      docker_sandbox_images: "{{ images_automatic_inventory_2 }}"
-      docker_sandbox_containers: "{{ containers_automatic_inventory_2 }}"
+      docker_sandbox_images: "{{ images_inventory_4 }}"
+      docker_sandbox_containers: "{{ containers_inventory_4 }}"
       docker_sandbox_state: started
       docker_sandbox_group: docker_sandbox_containers_2
       docker_sandbox_idempotence_test: false
@@ -204,7 +197,7 @@
     - name: verify only running docker containers are the last ones created
       assert:
         that: >-
-          item in containers_automatic_inventory_2
+          item in containers_inventory_4
                   | map(attribute='name')
                   | list
       with_items: "{{ search_test_containers_result.stdout_lines }}"
@@ -213,8 +206,8 @@
   hosts: localhost
   roles:
     - role: amtega.docker_sandbox
-      docker_sandbox_images: "{{ images_automatic_inventory_3 }}"
-      docker_sandbox_containers: "{{ containers_automatic_inventory_3 }}"
+      docker_sandbox_images: "{{ images_inventory_5 }}"
+      docker_sandbox_containers: "{{ containers_inventory_5 }}"
       docker_sandbox_state: started
       docker_sandbox_group: docker_sandbox_containers_3
       docker_sandbox_idempotence_test: false
@@ -227,15 +220,14 @@
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_ppid={{ lookup(
           'pipe',
-          'ps -o ppid= -p `ps -o ppid= -p $PPID`')
-                                              | trim }}
+          'ps -o ppid= -p `ps -o ppid= -p $PPID`') | trim }}
       changed_when: false
       register: search_test_containers_result
 
     - name: verify only running docker containers are the last ones created
       assert:
         that: >-
-          item in containers_automatic_inventory_3
+          item in containers_inventory_5
                   | map(attribute='name')
                   | list
       with_items: "{{ search_test_containers_result.stdout_lines }}"
@@ -244,8 +236,8 @@
   hosts: localhost
   roles:
     - role: amtega.docker_sandbox
-      docker_sandbox_images: "{{ images_automatic_inventory_4 }}"
-      docker_sandbox_containers: "{{ containers_automatic_inventory_4 }}"
+      docker_sandbox_images: "{{ images_inventory_6 }}"
+      docker_sandbox_containers: "{{ containers_inventory_6 }}"
       docker_sandbox_state: started
       docker_sandbox_group: docker_sandbox_containers_4
       docker_sandbox_idempotence_test: false
@@ -258,15 +250,14 @@
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_ppid={{ lookup(
           'pipe',
-          'ps -o ppid= -p `ps -o ppid= -p $PPID`')
-                                              | trim }}
+          'ps -o ppid= -p `ps -o ppid= -p $PPID`') | trim }}
       changed_when: false
       register: search_test_containers_result
 
     - name: verify only running docker containers are the last ones created
       assert:
         that: >-
-          item in containers_automatic_inventory_4
+          item in containers_inventory_6
                   | map(attribute='name')
                   | list
       with_items: "{{ search_test_containers_result.stdout_lines }}"
@@ -287,15 +278,15 @@
   roles:
     - role: amtega.docker_sandbox
       docker_sandbox_images: >-
-        {{ images_automatic_inventory_1
-           | union(images_automatic_inventory_2)
-           | union(images_automatic_inventory_3)
-           | union(images_automatic_inventory_4) }}
+        {{ images_inventory_3
+           | union(images_inventory_4)
+           | union(images_inventory_5)
+           | union(images_inventory_6) }}
       docker_sandbox_containers: >-
-        {{ containers_automatic_inventory_1
-           | union(containers_automatic_inventory_2)
-           | union(containers_automatic_inventory_3)
-           | union(containers_automatic_inventory_4) }}
+        {{ containers_inventory_3
+           | union(containers_inventory_4)
+           | union(containers_inventory_5)
+           | union(containers_inventory_6) }}
       docker_sandbox_state: absent
   tasks:
     - name: search running docker containers
@@ -307,12 +298,12 @@
     - name: verify there are not running test docker containers
       assert:
        that: >-
-        item not in containers_explicit_inventory_1
-                    | union(containers_explicit_inventory_2)
-                    | union(containers_automatic_inventory_1)
-                    | union(containers_automatic_inventory_2)
-                    | union(containers_automatic_inventory_3)
-                    | union(containers_automatic_inventory_4)
+        item not in containers_inventory_1
+                    | union(containers_inventory_2)
+                    | union(containers_inventory_3)
+                    | union(containers_inventory_4)
+                    | union(containers_inventory_5)
+                    | union(containers_inventory_6)
                     | map(attribute='name')
                     | list
       with_items: "{{ search_test_containers_result.stdout_lines }}"
