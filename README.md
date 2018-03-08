@@ -21,6 +21,7 @@ Also, the role setup the following facts during execution:
 
 ## Dependencies
 
+- amtega.docker_engine
 - amtega.docker_provisioner
 - amtega.idempotence_tester
 
