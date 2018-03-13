@@ -65,6 +65,7 @@
       docker_sandbox_containers: "{{ containers_inventory_2 }}"
       docker_sandbox_state: started
       docker_sandbox_inventory: "./docker_sandbox_inventory"
+      docker_sandbox_group: docker_sandbox_containers_cleanup_by_inventory
       docker_sandbox_idempotence_test: false
       docker_sandbox_cleanup_by_ppid: false
       docker_sandbox_cleanup_by_user: false
@@ -125,7 +126,7 @@
       docker_sandbox_images: "{{ images_inventory_3 }}"
       docker_sandbox_containers: "{{ containers_inventory_3 }}"
       docker_sandbox_state: started
-      docker_sandbox_group: docker_sandbox_containers_1
+      docker_sandbox_group: docker_sandbox_containers
       docker_sandbox_idempotence_test_recreate_after: true
   tasks:
     - name: assert that idempotence test was ok
@@ -133,7 +134,7 @@
         that: not docker_sandbox_idempotence_result | failed
 
 - name: test that containers were recreated after running idempotence test
-  hosts: docker_sandbox_containers_1
+  hosts: docker_sandbox_containers
   tasks:
     - name: check /tmp/testfile file
       stat:
@@ -144,6 +145,11 @@
       assert:
         that: not check_testfile_result.stat.exists
 
+- name: refresh inventory
+  hosts: localhost
+  tasks:
+    - meta: refresh_inventory
+
 - name: test disabling containers recreation after idempotence test
   hosts: localhost
   roles:
@@ -151,11 +157,11 @@
       docker_sandbox_images: "{{ images_inventory_3 }}"
       docker_sandbox_containers: "{{ containers_inventory_3 }}"
       docker_sandbox_state: recreated
-      docker_sandbox_group: docker_sandbox_containers_1
+      docker_sandbox_group: docker_sandbox_containers
       docker_sandbox_idempotence_test_recreate_after: false
 
 - name: test that containers were not recreated after idempotence test
-  hosts: docker_sandbox_containers_1
+  hosts: docker_sandbox_containers
   tasks:
     - name: check /tmp/testfile file
       stat:
@@ -170,6 +176,11 @@
       set_fact:
         docker_sandbox_images: []
         docker_sandbox_containers: []
+
+- name: refresh inventory
+  hosts: localhost
+  tasks:
+    - meta: refresh_inventory
 
 - name: test cleanup by ppid
   hosts: localhost
@@ -189,8 +200,7 @@
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_ppid={{ lookup(
           'pipe',
-          'ps -o ppid= -p `ps -o ppid= -p $PPID`')
-                                              | trim }}
+          'ps -o ppid= -p `ps -o ppid= -p $PPID`') | trim }}
       changed_when: false
       register: search_test_containers_result
 
@@ -239,7 +249,7 @@
       docker_sandbox_images: "{{ images_inventory_6 }}"
       docker_sandbox_containers: "{{ containers_inventory_6 }}"
       docker_sandbox_state: started
-      docker_sandbox_group: docker_sandbox_containers_4
+      docker_sandbox_group: docker_sandbox_containers
       docker_sandbox_idempotence_test: false
       docker_sandbox_cleanup_by_ppid: false
       docker_sandbox_cleanup_by_user: false
@@ -263,7 +273,7 @@
       with_items: "{{ search_test_containers_result.stdout_lines }}"
 
 - name: create file for testing
-  hosts: docker_sandbox_containers_1
+  hosts: docker_sandbox_containers
   tasks:
     - name: create testing file
       copy:
@@ -278,12 +288,16 @@
   roles:
     - role: amtega.docker_sandbox
       docker_sandbox_images: >-
-        {{ images_inventory_3
+        {{ images_inventory_1
+           | union(images_inventory_2)
+           | union(images_inventory_3)
            | union(images_inventory_4)
            | union(images_inventory_5)
            | union(images_inventory_6) }}
       docker_sandbox_containers: >-
-        {{ containers_inventory_3
+        {{ containers_inventory_1
+           | union(containers_inventory_2)
+           | union(containers_inventory_3)
            | union(containers_inventory_4)
            | union(containers_inventory_5)
            | union(containers_inventory_6) }}
