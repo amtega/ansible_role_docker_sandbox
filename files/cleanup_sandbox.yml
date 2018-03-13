@@ -10,5 +10,5 @@
         (if not given will try to cleanup all docker sandboxes)
       private: no
   roles:
-    - role: docker_sandbox
+    - role: amtega.docker_sandbox
       docker_sandbox_state: absent

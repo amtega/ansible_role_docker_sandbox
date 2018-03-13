@@ -10,8 +10,8 @@
         (if not given a random one will be created)
       private: no
   roles:
-    - role: docker_presets
-    - role: docker_sandbox
+    - role: amtega.docker_presets
+    - role: amtega.docker_sandbox
       docker_sandbox_state: started
       docker_sandbox_idempotence_test: false
       docker_sandbox_cleanup_by_ppid: false
