@@ -24,5 +24,4 @@ galaxy_info:
     - development
     - docker
 
-dependencies:
-  - amtega.docker_engine
+dependencies: []

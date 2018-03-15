@@ -77,7 +77,7 @@
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_ppid={{ lookup(
           'pipe',
-          'ps -o ppid= -p `ps -o ppid= -p $PPID`') | trim }}
+          'echo $PPID') | trim }}
       changed_when: false
       register: search_test_containers_result
 
@@ -101,7 +101,7 @@
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_ppid={{ lookup(
           'pipe',
-          'ps -o ppid= -p `ps -o ppid= -p $PPID`') | trim }}
+          'echo $PPID') | trim }}
       changed_when: false
       register: search_test_containers_result
 
@@ -200,7 +200,7 @@
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_ppid={{ lookup(
           'pipe',
-          'ps -o ppid= -p `ps -o ppid= -p $PPID`') | trim }}
+          'echo $PPID') | trim }}
       changed_when: false
       register: search_test_containers_result
 
@@ -230,7 +230,7 @@
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_ppid={{ lookup(
           'pipe',
-          'ps -o ppid= -p `ps -o ppid= -p $PPID`') | trim }}
+          'echo $PPID') | trim }}
       changed_when: false
       register: search_test_containers_result
 
@@ -260,7 +260,7 @@
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_ppid={{ lookup(
           'pipe',
-          'ps -o ppid= -p `ps -o ppid= -p $PPID`') | trim }}
+          'echo $PPID') | trim }}
       changed_when: false
       register: search_test_containers_result
 
