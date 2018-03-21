@@ -283,7 +283,7 @@
   tags:
     - idempotence
 
-- name: cleanup docker docker sandbox
+- name: cleanup docker sandbox
   hosts: localhost
   roles:
     - role: amtega.docker_sandbox
