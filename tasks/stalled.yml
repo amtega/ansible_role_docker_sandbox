@@ -16,7 +16,7 @@
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_ppid={{ lookup(
           'pipe',
-          'ps -o ppid= -p `ps -o ppid= -p $PPID`') | trim }}
+          'echo $PPID') | trim }}
       changed_when: false
       when: docker_sandbox_cleanup_by_ppid
       register: docker_sandbox_containers_by_ppid_result

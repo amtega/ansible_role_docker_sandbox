@@ -13,7 +13,7 @@
     docker_provisioner_containers: "{{ docker_sandbox_containers }}"
     docker_provisioner_container_labels:
       docker_sandbox_ppid: >-
-        {{ lookup('pipe', 'ps -o ppid= -p `ps -o ppid= -p $PPID`') | trim }}
+        {{ lookup('pipe', 'echo $PPID') | trim }}
       docker_sandbox_user: >-
         {{ lookup('pipe', 'echo $USER') | trim }}
       docker_sandbox_playbook: "{{ docker_sandbox_playbook }}"
