@@ -131,7 +131,7 @@
   tasks:
     - name: assert that idempotence test was ok
       assert:
-        that: not docker_sandbox_idempotence_result | failed
+        that: not docker_sandbox_idempotence_result is failed
 
 - name: test that containers were recreated after running idempotence test
   hosts: docker_sandbox_containers

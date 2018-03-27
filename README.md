@@ -42,7 +42,7 @@ This is an example playbook:
   tasks:
     - name: assert that idempotence test was ok
       assert:
-        that: not docker_sandbox_idempotence_result | failed
+        that: not docker_sandbox_idempotence_result is failed
 
 - name: simple idempotence test
   hosts: docker_sandbox_containers
