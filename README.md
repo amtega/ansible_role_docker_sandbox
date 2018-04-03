@@ -6,7 +6,7 @@ The role will provisione a docker based sandbox and run idempotence tests on the
 
 ## Requirements
 
-- Ansible >= 2.4
+[Ansible 2.5+](http://docs.ansible.com/ansible/latest/intro_installation.html)
 
 ## Role Variables
 
@@ -91,18 +91,13 @@ ansible-playbook files/cleanup_sandbox.yml -e "docker_sandbox_inventory=/tmp/ans
 
 ## Testing
 
-Test are based on docker containers. You can run the tests with the following commands:
+Tests are based on docker containers. You can setup docker engine quickly using the playbook `files/setup.yml` available in the role [amtega.docker_engine](https://galaxy.ansible.com/amtega/docker_engine).
+
+Once you have docker, you can run the tests with the following commands:
 
 ```shell
 $ cd amtega.docker_sandbox/tests
 $ ansible-playbook main.yml
-```
-
-If you have docker engine configured you can avoid running dependant 'docker_engine' role (that usually requries root privileges) with the following commands:
-
-```shell
-$ cd amtega.docker_sandbox/tests
-$ ansible-playbook --skip-tags "role::docker_engine" main.yml
 ```
 
 ## License

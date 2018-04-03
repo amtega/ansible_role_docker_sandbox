@@ -9,13 +9,11 @@
       {{ (docker_sandbox_state in ["absent", "recreated"])
          | ternary([], docker_sandbox_images) }}
     docker_provisioner_image_state: present
-    docker_provisioner_image_force: true
     docker_provisioner_containers: "{{ docker_sandbox_containers }}"
     docker_provisioner_container_labels:
       docker_sandbox_ppid: >-
-        {{ lookup('pipe', 'echo $PPID') | trim }}
-      docker_sandbox_user: >-
-        {{ lookup('pipe', 'echo $USER') | trim }}
+        {{ docker_sandbox_get_ppid_result.stdout }}
+      docker_sandbox_user: "{{ ansible_user_id }}"
       docker_sandbox_playbook: "{{ docker_sandbox_playbook }}"
       docker_sandbox_inventory: "{{ docker_sandbox_inventory }}"
     docker_provisioner_container_groups: ["{{ docker_sandbox_group }}"]

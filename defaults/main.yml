@@ -66,3 +66,7 @@ docker_sandbox_cleanup_by_playbook: "{{ docker_sandbox_inventory is none }}"
 
 docker_sandbox_cleanup_by_inventory: >-
   {{ docker_sandbox_inventory is not none }}
+
+# Max time to clean an stalled docker container
+
+docker_sandbox_cleanup_max_time: 30
