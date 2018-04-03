@@ -72,12 +72,15 @@
       docker_sandbox_cleanup_by_playbook: false
       docker_sandbox_cleanup_by_inventory: true
   tasks:
+    - name: get partent process id
+      shell: "echo $PPID"
+      changed_when: false
+      register: get_ppid_result
+
     - name: search running docker containers created by the test
       shell: >-
         docker ps -a --format='{''{.Names}''}'
-        --filter label=docker_sandbox_ppid={{ lookup(
-          'pipe',
-          'echo $PPID') | trim }}
+        --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
       changed_when: false
       register: search_test_containers_result
 
@@ -85,7 +88,7 @@
       assert:
        that: >-
         item in containers_inventory_2 | map(attribute='name') | list
-      with_items: "{{ search_test_containers_result.stdout_lines }}"
+      loop: "{{ search_test_containers_result.stdout_lines }}"
 
 - name: test explicit cleanup with absent state
   hosts: localhost
@@ -96,12 +99,15 @@
       docker_sandbox_state: absent
       docker_sandbox_inventory: "./docker_sandbox_inventory"
   tasks:
+    - name: get partent process id
+      shell: "echo $PPID"
+      changed_when: false
+      register: get_ppid_result
+
     - name: search running docker containers created by the test
       shell: >-
         docker ps -a --format='{''{.Names}''}'
-        --filter label=docker_sandbox_ppid={{ lookup(
-          'pipe',
-          'echo $PPID') | trim }}
+        --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
       changed_when: false
       register: search_test_containers_result
 
@@ -195,12 +201,15 @@
       docker_sandbox_cleanup_by_user: false
       docker_sandbox_cleanup_by_playbook: false
   tasks:
+    - name: get partent process id
+      shell: "echo $PPID"
+      changed_when: false
+      register: get_ppid_result
+
     - name: search running docker containers created by the test
       shell: >-
         docker ps -a --format='{''{.Names}''}'
-        --filter label=docker_sandbox_ppid={{ lookup(
-          'pipe',
-          'echo $PPID') | trim }}
+        --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
       changed_when: false
       register: search_test_containers_result
 
@@ -210,7 +219,7 @@
           item in containers_inventory_4
                   | map(attribute='name')
                   | list
-      with_items: "{{ search_test_containers_result.stdout_lines }}"
+      loop: "{{ search_test_containers_result.stdout_lines }}"
 
 - name: test cleanup by user
   hosts: localhost
@@ -225,12 +234,15 @@
       docker_sandbox_cleanup_by_user: true
       docker_sandbox_cleanup_by_playbook: false
   tasks:
+    - name: get partent process id
+      shell: "echo $PPID"
+      changed_when: false
+      register: get_ppid_result
+
     - name: search running docker containers created by the test
       shell: >-
         docker ps -a --format='{''{.Names}''}'
-        --filter label=docker_sandbox_ppid={{ lookup(
-          'pipe',
-          'echo $PPID') | trim }}
+        --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
       changed_when: false
       register: search_test_containers_result
 
@@ -240,7 +252,7 @@
           item in containers_inventory_5
                   | map(attribute='name')
                   | list
-      with_items: "{{ search_test_containers_result.stdout_lines }}"
+      loop: "{{ search_test_containers_result.stdout_lines }}"
 
 - name: test cleanup by playbook
   hosts: localhost
@@ -255,12 +267,15 @@
       docker_sandbox_cleanup_by_user: false
       docker_sandbox_cleanup_by_playbook: true
   tasks:
+    - name: get partent process id
+      shell: "echo $PPID"
+      changed_when: false
+      register: get_ppid_result
+
     - name: search running docker containers created by the test
       shell: >-
         docker ps -a --format='{''{.Names}''}'
-        --filter label=docker_sandbox_ppid={{ lookup(
-          'pipe',
-          'echo $PPID') | trim }}
+        --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
       changed_when: false
       register: search_test_containers_result
 
@@ -270,7 +285,7 @@
           item in containers_inventory_6
                   | map(attribute='name')
                   | list
-      with_items: "{{ search_test_containers_result.stdout_lines }}"
+      loop: "{{ search_test_containers_result.stdout_lines }}"
 
 - name: create file for testing
   hosts: docker_sandbox_containers
@@ -320,4 +335,4 @@
                     | union(containers_inventory_6)
                     | map(attribute='name')
                     | list
-      with_items: "{{ search_test_containers_result.stdout_lines }}"
+      loop: "{{ search_test_containers_result.stdout_lines }}"
