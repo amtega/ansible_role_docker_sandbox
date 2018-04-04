@@ -1,0 +1,9 @@
+---
+# Tasks to get parent process id
+
+- name: get partent process id
+  shell: "echo $PPID"
+  changed_when: false
+  register: docker_sandbox_get_ppid_result
+  tags:
+    - role::docker_sandbox

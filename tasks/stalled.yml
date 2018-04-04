@@ -11,11 +11,6 @@
         docker_sandbox_playbook: >-
           {{ playbook_dir }}/{{ docker_sandbox_get_playbook_result.playbook }}
 
-    - name: get partent process id
-      shell: "echo $PPID"
-      changed_when: false
-      register: docker_sandbox_get_ppid_result
-
     - name: search previous dockers containers created by same parent ppid
       shell: >-
         docker ps -a --format='{''{.Names}''}'
