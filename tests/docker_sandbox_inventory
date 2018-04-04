@@ -1,0 +1,19 @@
+#
+# Ansible managed
+#
+
+[docker_sandbox_containers_explicit_inventory]
+fedora_27_36450856 ansible_host=172.17.0.2 ansible_user=root ansible_password=root ansible_connection=ssh
+
+
+[docker_sandbox_containers_explicit_inventory]
+fedora_26_72572576 ansible_host=172.17.0.3 ansible_user=root ansible_password=root ansible_connection=ssh
+
+
+[docker_sandbox_containers_explicit_inventory]
+centos_6_62512880 ansible_host=172.17.0.5 ansible_user=root ansible_password=root ansible_connection=ssh
+
+
+[docker_sandbox_containers_explicit_inventory]
+centos_7_75554547 ansible_host=172.17.0.4 ansible_user=root ansible_password=root ansible_connection=ssh
+
