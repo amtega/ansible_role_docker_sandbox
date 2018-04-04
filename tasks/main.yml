@@ -13,6 +13,11 @@
     - role::docker_sandbox
     - role::docker_sandbox::presets
 
+- name: get parent process id
+  import_tasks: ppid.yml
+  tags:
+    - role::docker_sandbox
+
 - name: manage stalled containers
   import_tasks: stalled.yml
   tags:
