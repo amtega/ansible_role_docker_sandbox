@@ -15,8 +15,10 @@ galaxy_info:
       - 27
   - name: EL
     versions:
-      - 6
       - 7
+  - name: Debian
+    versions:
+      - stretch
   galaxy_tags:
     - ansible
     - testing
