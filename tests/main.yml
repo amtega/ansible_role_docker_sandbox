@@ -6,168 +6,244 @@
   roles:
     - role: amtega.docker_presets
       docker_presets_images_json_query: >-
-        [? (starts_with(name, `centos_7`))
-           || starts_with(name, `debian`)
-           || starts_with(name, `fedora`) ]
-  tags:
-    - sandbox
+        [? (starts_with(name, `fedora_27`))]
+
+ # || starts_with(name, `debian`)
+ # || starts_with(name, `fedora`) ]
+  tasks:
+    - block:
+        - name: search docker registry
+          shell: >-
+            docker ps -a --format='{''{.Names}''}'
+            --filter ancestor="registry:2" --filter status="running"
+          changed_when: false
+          register: search_registry_result
+
+        - name: ensure docker registry is found
+          assert:
+            that: search_registry_result.stdout | length > 0
+            msg: "This test requires a local docker registry"
+
+        - name: get docker registry ip addresses
+          shell: >-
+            docker inspect --format='{''{.NetworkSettings.IPAddress}''}'
+            {{ search_registry_result.stdout }}
+          register: search_registry_ip_result
+          changed_when: false
+      when: registry_ip is not defined
+
+    - name: setup fact with registry address
+      set_fact:
+        registry_address: >-
+          {{ registry_ip
+               | default(search_registry_ip_result.stdout)
+             + ":"
+             + registry_port
+               | default(5000)
+               | string }}
+  # tags:
+    # - sandbox
+# FIXME
 
 - name: run idempotence test
   hosts: localhost
   roles:
     - role: amtega.docker_sandbox
       docker_sandbox_state: started
+      docker_provisioner_image_push: true
+      docker_sandbox_idempotence_test: false  # FIXME
   tags:
     - sandbox
 
 - name: load docker presets and configure sandboxes
   hosts: docker_sandbox_containers
+  serial: 1
   roles:
+    - role: amtega.docker_engine
+      docker_engine_insecure_registries:
+        - "{{ hostvars.localhost.registry_address }}"
+      docker_engine_registry_state: absent
+
     - role: amtega.docker_presets
+      docker_presets_images_json_query: >-
+        [? (starts_with(name, `centos_7`))
+           || starts_with(name, `debian`)
+           || starts_with(name, `fedora`) ]
   tasks:
+    - name: point containers images to host registry
+      set_fact:
+        containers1: >-
+          {{ docker_presets_containers
+             | to_nice_yaml
+             | regex_replace('image: (.*)',
+                             'image: "'
+                             + hostvars.localhost.registry_address
+                             + "/"
+                             + "\1"
+                             + '"')
+             | from_yaml }}
+
+    - set_fact:
+        containers: "[{{ containers1[0] }}]"
+
     - name: setup sandbox config for explicit inventory file test 1
       set_fact:
-        images_inventory_1: "{{ docker_presets_images }}"
+        images_inventory_1: []
         containers_inventory_1: >-
-          {{ docker_presets_containers
-             | selectattr("name", "search", container_preset)
-             | list  }}
+          {{ containers | docker_presets_randomize_names }}
 
     - name: setup sandbox config for explicit inventory file test 2
       set_fact:
-        images_inventory_2: "{{ docker_presets_images }}"
+        images_inventory_2: []
         containers_inventory_2: >-
-          {{ docker_presets_containers
-             | selectattr("name", "search", container_preset)
-             | list }}
+          {{ containers | docker_presets_randomize_names }}
 
     - name: setup sandbox config for automatic inventory file tests 1
       set_fact:
-        images_inventory_3: "{{ docker_presets_images }}"
+        images_inventory_3: []
         containers_inventory_3: >
-          {{ docker_presets_containers
-             | selectattr("name", "search", container_preset)
-             | list  }}
+          {{ containers | docker_presets_randomize_names }}
 
     - name: setup sandbox config for automatic inventory file tests 2
       set_fact:
-        images_inventory_4: "{{ docker_presets_images }}"
+        images_inventory_4: []
         containers_inventory_4: >
-          {{ docker_presets_containers
-             | selectattr("name", "search", container_preset)
-             | list  }}
+          {{ containers | docker_presets_randomize_names }}
 
     - name: setup sandbox config for automatic inventory file tests 3
       set_fact:
-        images_inventory_5: "{{ docker_presets_images }}"
+        images_inventory_5: []
         containers_inventory_5: >
-          {{ docker_presets_containers
-             | selectattr("name", "search", container_preset)
-             | list  }}
+          {{ containers | docker_presets_randomize_names }}
 
     - name: setup sandbox config for automatic inventory file tests 4
       set_fact:
-        images_inventory_6: "{{ docker_presets_images }}"
+        images_inventory_6: []
         containers_inventory_6: >
-          {{ docker_presets_containers
-             | selectattr("name", "search", container_preset)
-             | list  }}
+          {{ containers | docker_presets_randomize_names }}
+
+    - name: install pip
+      package:
+        name: python-pip
+        state: present
+
+    - name: install ansible
+      pip:
+        name: ansible
+        state: latest
+
+    - name: copy playbook to test idempotence
+      copy:
+        src: idempotence.yml
+        dest: /tmp/idempotence.yml
   vars:
-    container_name:
-      name: "{{ container_preset }}"
+    container_preset: >-
+      {{ inventory_hostname | regex_replace('(.*_.*)_.*', '\1') }}
+    registry:
+      repository: "{{ host_get_ip_result.stdout }}:5000/{{ container_preset }}"
 
-- name: test disabling idempotence check
-  hosts: docker_sandbox_containers
-  roles:
-    - role: amtega.docker_sandbox
-      docker_sandbox_images: "{{ images_inventory_1 }}"
-      docker_sandbox_containers: "{{ containers_inventory_1 }}"
-      docker_sandbox_state: started
-      docker_sandbox_inventory: "./docker_sandbox_inventory"
-      docker_sandbox_group: docker_sandbox_containers_nested_explicit_inventory
-      docker_sandbox_idempotence_test: false
-      docker_sandbox_cleanup_by_ppid: true
-      docker_sandbox_cleanup_by_user: true
-      docker_sandbox_cleanup_by_playbook: true
-      docker_sandbox_cleanup_by_inventory: true
-
-- name: test cleanup by inventory file
-  hosts: docker_sandbox_containers
-  roles:
-    - role: amtega.docker_sandbox
-      docker_sandbox_images: "{{ images_inventory_2 }}"
-      docker_sandbox_containers: "{{ containers_inventory_2 }}"
-      docker_sandbox_state: started
-      docker_sandbox_inventory: "./docker_sandbox_inventory"
-      docker_sandbox_group: >-
-        docker_sandbox_containers_nested_cleanup_by_inventory
-      docker_sandbox_idempotence_test: false
-      docker_sandbox_cleanup_by_ppid: false
-      docker_sandbox_cleanup_by_user: false
-      docker_sandbox_cleanup_by_playbook: false
-      docker_sandbox_cleanup_by_inventory: true
-  tasks:
-    - name: get partent process id
-      shell: "echo $PPID"
-      changed_when: false
-      register: get_ppid_result
-
-    - name: search running docker containers created by the test
-      shell: >-
-        docker ps -a --format='{''{.Names}''}'
-        --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
-      changed_when: false
-      register: search_test_containers_result
-
-    - name: verify only running docker containers are the last ones created
-      assert:
-       that: >-
-        item in containers_inventory_2 | map(attribute='name') | list
-      loop: "{{ search_test_containers_result.stdout_lines }}"
-
-- name: test explicit cleanup with absent state
-  hosts: docker_sandbox_containers
-  roles:
-    - role: amtega.docker_sandbox
-      docker_sandbox_images: "{{ images_inventory_2 }}"
-      docker_sandbox_containers: "{{ containers_inventory_2 }}"
-      docker_sandbox_state: absent
-      docker_sandbox_inventory: "./docker_sandbox_inventory"
-  tasks:
-    - name: get partent process id
-      shell: "echo $PPID"
-      changed_when: false
-      register: get_ppid_result
-
-    - name: search running docker containers created by the test
-      shell: >-
-        docker ps -a --format='{''{.Names}''}'
-        --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
-      changed_when: false
-      register: search_test_containers_result
-
-    - name: verify there are not running test docker containers
-      assert:
-       that: search_test_containers_result.stdout_lines | length == 0
-
-    - name: search explicit inventory from previous test
-      stat:
-        path: "./docker_sandbox_inventory"
-      register: check_explicit_inventory_result
-
-    - name: check explicit inventory from previous test does not exist
-      assert:
-        that:
-          - not check_explicit_inventory_result.stat.exists
+# - name: test disabling idempotence check
+#   hosts: docker_sandbox_containers
+#   serial: 1
+#   roles:
+#     - role: amtega.docker_sandbox
+#       docker_provisioner_containers_provisioning_method: sequential
+#       docker_sandbox_images: "{{ images_inventory_1 }}"
+#       docker_sandbox_containers: "{{ containers_inventory_1 }}"
+#       docker_sandbox_state: started
+#       docker_sandbox_inventory: "./docker_sandbox_inventory"
+#       docker_sandbox_group: docker_sandbox_containers_nested_explicit_inventory
+#       docker_sandbox_idempotence_test: false
+#       docker_sandbox_cleanup_by_ppid: true
+#       docker_sandbox_cleanup_by_user: true
+#       docker_sandbox_cleanup_by_playbook: true
+#       docker_sandbox_cleanup_by_inventory: true
+#
+# - name: test cleanup by inventory file
+#   hosts: docker_sandbox_containers
+#   serial: 1
+#   roles:
+#     - role: amtega.docker_sandbox
+#       docker_provisioner_containers_provisioning_method: sequential
+#       docker_sandbox_images: "{{ images_inventory_2 }}"
+#       docker_sandbox_containers: "{{ containers_inventory_2 }}"
+#       docker_sandbox_state: started
+#       docker_sandbox_inventory: "./docker_sandbox_inventory"
+#       docker_sandbox_group: >-
+#         docker_sandbox_containers_nested_cleanup_by_inventory
+#       docker_sandbox_idempotence_test: false
+#       docker_sandbox_cleanup_by_ppid: false
+#       docker_sandbox_cleanup_by_user: false
+#       docker_sandbox_cleanup_by_playbook: false
+#       docker_sandbox_cleanup_by_inventory: true
+#   tasks:
+#     - name: get partent process id
+#       shell: "echo $PPID"
+#       changed_when: false
+#       register: get_ppid_result
+#
+#     - name: search running docker containers created by the test
+#       shell: >-
+#         docker ps -a --format='{''{.Names}''}'
+#         --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
+#       changed_when: false
+#       register: search_test_containers_result
+#
+#     - name: verify only running docker containers are the last ones created
+#       assert:
+#        that: >-
+#         item in containers_inventory_2 | map(attribute='name') | list
+#       loop: "{{ search_test_containers_result.stdout_lines }}"
+#
+# - name: test explicit cleanup with absent state
+#   hosts: docker_sandbox_containers
+#   serial: 1
+#   roles:
+#     - role: amtega.docker_sandbox
+#       docker_provisioner_containers_provisioning_method: sequential
+#       docker_sandbox_images: "{{ images_inventory_2 }}"
+#       docker_sandbox_containers: "{{ containers_inventory_2 }}"
+#       docker_sandbox_state: absent
+#       docker_sandbox_inventory: "./docker_sandbox_inventory"
+#   tasks:
+#     - name: get partent process id
+#       shell: "echo $PPID"
+#       changed_when: false
+#       register: get_ppid_result
+#
+#     - name: search running docker containers created by the test
+#       shell: >-
+#         docker ps -a --format='{''{.Names}''}'
+#         --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
+#       changed_when: false
+#       register: search_test_containers_result
+#
+#     - name: verify there are not running test docker containers
+#       assert:
+#        that: search_test_containers_result.stdout_lines | length == 0
+#
+#     - name: search explicit inventory from previous test
+#       stat:
+#         path: "./docker_sandbox_inventory"
+#       register: check_explicit_inventory_result
+#
+#     - name: check explicit inventory from previous test does not exist
+#       assert:
+#         that:
+#           - not check_explicit_inventory_result.stat.exists
 
 - name: test enabling recreation after idempotence test
   hosts: docker_sandbox_containers
+  serial: 1
   roles:
     - role: amtega.docker_sandbox
+      docker_provisioner_containers_provisioning_method: sequential
+      idempotence_tester_playbook: "/tmp/idempotence.yml"
       docker_sandbox_images: "{{ images_inventory_3 }}"
       docker_sandbox_containers: "{{ containers_inventory_3 }}"
       docker_sandbox_state: started
       docker_sandbox_group: docker_sandbox_containers_nested
+      docker_sandbox_idempotence_test: true
       docker_sandbox_idempotence_test_recreate_after: true
   tasks:
     - name: assert that idempotence test was ok
@@ -176,6 +252,7 @@
 
 - name: test that containers were recreated after running idempotence test
   hosts: docker_sandbox_containers_nested
+  serial: 1
   tasks:
     - name: check /tmp/testfile file
       stat:
@@ -188,13 +265,16 @@
 
 - name: refresh inventory
   hosts: docker_sandbox_containers
+  serial: 1
   tasks:
     - meta: refresh_inventory
 
 - name: test disabling containers recreation after idempotence test
   hosts: docker_sandbox_containers
+  serial: 1
   roles:
     - role: amtega.docker_sandbox
+      docker_provisioner_containers_provisioning_method: sequential
       docker_sandbox_images: "{{ images_inventory_3 }}"
       docker_sandbox_containers: "{{ containers_inventory_3 }}"
       docker_sandbox_state: recreated
@@ -203,6 +283,7 @@
 
 - name: test that containers were not recreated after idempotence test
   hosts: docker_sandbox_containers_nested
+  serial: 1
   tasks:
     - name: check /tmp/testfile file
       stat:
@@ -220,6 +301,7 @@
 
 - name: refresh inventory
   hosts: docker_sandbox_containers
+  serial: 1
   tasks:
     - meta: refresh_inventory
 
@@ -227,6 +309,7 @@
   hosts: docker_sandbox_containers
   roles:
     - role: amtega.docker_sandbox
+      docker_provisioner_containers_provisioning_method: sequential
       docker_sandbox_images: "{{ images_inventory_4 }}"
       docker_sandbox_containers: "{{ containers_inventory_4 }}"
       docker_sandbox_state: started
@@ -258,8 +341,10 @@
 
 - name: test cleanup by user
   hosts: docker_sandbox_containers
+  serial: 1
   roles:
     - role: amtega.docker_sandbox
+      docker_provisioner_containers_provisioning_method: sequential
       docker_sandbox_images: "{{ images_inventory_5 }}"
       docker_sandbox_containers: "{{ containers_inventory_5 }}"
       docker_sandbox_state: started
@@ -291,8 +376,10 @@
 
 - name: test cleanup by playbook
   hosts: docker_sandbox_containers
+  serial: 1
   roles:
     - role: amtega.docker_sandbox
+      docker_provisioner_containers_provisioning_method: sequential
       docker_sandbox_images: "{{ images_inventory_6 }}"
       docker_sandbox_containers: "{{ containers_inventory_6 }}"
       docker_sandbox_state: started
@@ -322,19 +409,11 @@
                   | list
       loop: "{{ search_test_containers_result.stdout_lines }}"
 
-- name: create file for testing
-  hosts: docker_sandbox_containers_nested
-  tasks:
-    - name: create testing file
-      copy:
-        content: "Hello World"
-        dest: /tmp/testfile
-        force: no
-  tags:
-    - idempotence
+- import_playbook: idempotence.yml
 
 - name: cleanup docker sandbox
   hosts: docker_sandbox_containers
+  serial: 1
   roles:
     - role: amtega.docker_sandbox
       docker_sandbox_images: >-
