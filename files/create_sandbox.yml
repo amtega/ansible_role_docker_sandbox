@@ -11,6 +11,8 @@
       private: no
   roles:
     - role: amtega.docker_presets
+      docker_presets_images_json_query: "[? name != '']"
+
     - role: amtega.docker_sandbox
       docker_sandbox_state: started
       docker_sandbox_idempotence_test: false
