@@ -6,9 +6,10 @@
   roles:
     - role: amtega.vagrant_presets
       vagrant_presets_boxes_json_query: >-
-        [? starts_with(name, `centos_7`)
-           || starts_with(name, `debian`)
-           || starts_with(name, `fedora`) ]
+        [? (starts_with(name, `centos_7`))
+           || starts_with(name, `debian_9`)
+           || starts_with(name, `fedora_26`)
+           || starts_with(name, `fedora_27`) ]
     - role: amtega.vagrant_sandbox
       vagrant_sandbox_state: started
   tags:
