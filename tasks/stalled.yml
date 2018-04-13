@@ -24,7 +24,7 @@
     - name: search previous dockers containers created by same user
       shell: >-
         docker ps -a --format='{''{.Names}''}'
-        --filter label=docker_sandbox_user={{ ansible_user_id }}
+        --filter label=docker_sandbox_user={{ ansible_facts.user_id }}
       changed_when: false
       when: docker_sandbox_cleanup_by_user
       register: docker_sandbox_containers_by_user_result
