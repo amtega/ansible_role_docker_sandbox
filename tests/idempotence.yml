@@ -2,7 +2,7 @@
 # Tasks for idempotence tests
 
 - name: create file for testing
-  hosts: docker_sandbox_containers_nested
+  hosts: docker_sandbox_containers
   tasks:
     - name: create testing file
       copy:
