@@ -16,7 +16,6 @@
 
 - name: setup software and config requirements in sandbox hosts
   hosts: vagrant_sandbox_vms
-  serial: 1
   roles:
     # - role: amtega.epel
     #   when: ansible_facts.distribution | lower in ["centos", "rhel"]
@@ -25,6 +24,7 @@
     #   when: ansible_facts.distribution | lower in ["fedora"]
     #
     # - role: amtega.docker_engine
+    #   docker_engine_registry_state: absent
 
     - role: amtega.docker_presets
   tasks:
@@ -40,11 +40,11 @@
     #   pip:
     #     name: ansible
     #     state: latest
-
-    - name: copy playbook to test idempotence
-      copy:
-        src: idempotence.yml
-        dest: /tmp/idempotence.yml
+    #
+    # - name: copy playbook to test idempotence
+    #   copy:
+    #     src: idempotence.yml
+    #     dest: /tmp/idempotence.yml
 
     - name: generate docker random images resets
       set_fact:
@@ -107,26 +107,24 @@
     registry:
       repository: "{{ host_get_ip_result.stdout }}:5000/{{ container_preset }}"
 
-# - name: test disabling idempotence check
-#   hosts: vagrant_sandbox_vms
-#   serial: 1
-#   roles:
-#     - role: amtega.docker_sandbox
-#       docker_provisioner_containers_provisioning_method: sequential
-#       docker_sandbox_images: "{{ images_inventory_1 }}"
-#       docker_sandbox_containers: "{{ containers_inventory_1 }}"
-#       docker_sandbox_state: started
-#       docker_sandbox_inventory: "./docker_sandbox_inventory"
-#       docker_sandbox_group: docker_sandbox_containers_disable_idempotence
-#       docker_sandbox_idempotence_test: false
-#       docker_sandbox_cleanup_by_ppid: true
-#       docker_sandbox_cleanup_by_user: true
-#       docker_sandbox_cleanup_by_playbook: true
-#       docker_sandbox_cleanup_by_inventory: true
+- name: test disabling idempotence check
+  hosts: vagrant_sandbox_vms
+  roles:
+    - role: amtega.docker_sandbox
+      docker_provisioner_containers_provisioning_method: sequential
+      docker_sandbox_images: "{{ images_inventory_1 }}"
+      docker_sandbox_containers: "{{ containers_inventory_1 }}"
+      docker_sandbox_state: started
+      docker_sandbox_inventory: "./docker_sandbox_inventory"
+      docker_sandbox_group: docker_sandbox_containers_disable_idempotence
+      docker_sandbox_idempotence_test: false
+      docker_sandbox_cleanup_by_ppid: true
+      docker_sandbox_cleanup_by_user: true
+      docker_sandbox_cleanup_by_playbook: true
+      docker_sandbox_cleanup_by_inventory: true
 #
 # - name: test cleanup by inventory file
 #   hosts: vagrant_sandbox_vms
-#   serial: 1
 #   roles:
 #     - role: amtega.docker_sandbox
 #       docker_provisioner_containers_provisioning_method: sequential
@@ -161,7 +159,6 @@
 #
 # - name: test explicit cleanup with absent state
 #   hosts: vagrant_sandbox_vms
-#   serial: 1
 #   roles:
 #     - role: amtega.docker_sandbox
 #       docker_provisioner_containers_provisioning_method: sequential
@@ -196,191 +193,208 @@
 #       assert:
 #         that:
 #           - not check_explicit_inventory_result.stat.exists
+#
+# - name: test enabling recreation after idempotence test
+#   hosts: vagrant_sandbox_vms
+#   roles:
+#     - role: amtega.docker_sandbox
+#       docker_provisioner_containers_provisioning_method: sequential
+#       idempotence_tester_playbook: /tmp/idempotence.yml
+#       docker_sandbox_images: "{{ images_inventory_3 }}"
+#       docker_sandbox_containers: "{{ containers_inventory_3 }}"
+#       docker_sandbox_state: started
+#       docker_sandbox_group: docker_sandbox_containers
+#       docker_sandbox_idempotence_test: true
+#       docker_sandbox_idempotence_test_recreate_after: true
+#   tasks:
+#     - name: assert that idempotence test was ok
+#       assert:
+#         that: not docker_sandbox_idempotence_result is failed
+#
+# - name: test that containers were recreated after running idempotence test
+#   hosts: vagrant_sandbox_vms
+#   tasks:
+#     - name: check /tmp/testfile file in all docker containers
+#       shell: >-
+#         for c in `docker ps -q`;
+#         do docker exec $c test -f /tmp/testfile
+#         && echo EXISTS || echo MISSING ;
+#         done
+#       register: check_testfile_result
+#       changed_when: false
+#       failed_when: false
+#
+#     - name: check testfile file does not exist
+#       assert:
+#         that:
+#           - not check_testfile_result.stdout is search("EXISTS")
+#           - check_testfile_result.stdout is search("MISSING")
+#
+# - name: refresh inventory
+#   hosts: vagrant_sandbox_vms
+#   tasks:
+#     - meta: refresh_inventory
+#
+# - name: test disabling containers recreation after idempotence test
+#   hosts: vagrant_sandbox_vms
+#   roles:
+#     - role: amtega.docker_sandbox
+#       docker_provisioner_containers_provisioning_method: sequential
+#       idempotence_tester_playbook: /tmp/idempotence.yml
+#       docker_sandbox_images: "{{ images_inventory_3 }}"
+#       docker_sandbox_containers: "{{ containers_inventory_3 }}"
+#       docker_sandbox_state: recreated
+#       docker_sandbox_group: docker_sandbox_containers
+#       docker_sandbox_idempotence_test: true
+#       docker_sandbox_idempotence_test_recreate_after: false
+#
+# - name: test that containers were not recreated after idempotence test
+#   hosts: vagrant_sandbox_vms
+#   tasks:
+#     - name: check /tmp/testfile file in all docker containers
+#       shell: >-
+#         for c in `docker ps -q`;
+#         do docker exec $c test -f /tmp/testfile
+#         && echo EXISTS || echo MISSING ;
+#         done
+#       register: check_testfile_result
+#       changed_when: false
+#       failed_when: false
+#
+#     - name: check testfile file exists
+#       assert:
+#         that:
+#           - not check_testfile_result.stdout is search("MISSING")
+#           - check_testfile_result.stdout is search("EXISTS")
+#
+#     - name: emtpy sandbox images and containers facts to prepare next test
+#       set_fact:
+#         docker_sandbox_images: []
+#         docker_sandbox_containers: []
+#
+# - name: refresh inventory
+#   hosts: vagrant_sandbox_vms
+#   tasks:
+#     - meta: refresh_inventory
 
-- name: test enabling recreation after idempotence test
+# - name: test cleanup by ppid
+#   hosts: vagrant_sandbox_vms
+#   roles:
+#     - role: amtega.docker_sandbox
+#       docker_provisioner_containers_provisioning_method: sequential
+#       docker_sandbox_images: "{{ images_inventory_4 }}"
+#       docker_sandbox_containers: "{{ containers_inventory_4 }}"
+#       docker_sandbox_state: started
+#       docker_sandbox_group: docker_sandbox_containers_cleanup_by_ppid
+#       docker_sandbox_idempotence_test: false
+#       docker_sandbox_cleanup_by_ppid: true
+#       docker_sandbox_cleanup_by_user: false
+#       docker_sandbox_cleanup_by_playbook: false
+#   tasks:
+#     - name: get partent process id
+#       shell: "echo $PPID"
+#       changed_when: false
+#       register: get_ppid_result
+#
+#     - name: search running docker containers created by the test
+#       shell: >-
+#         docker ps -a --format='{''{.Names}''}'
+#         --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
+#       changed_when: false
+#       register: search_test_containers_result
+#
+#     - name: verify only running docker containers are the last ones created
+#       assert:
+#         that: >-
+#           item in containers_inventory_4
+#                   | map(attribute='name')
+#                   | list
+#       loop: "{{ search_test_containers_result.stdout_lines }}"
+#
+# - name: test cleanup by user
+#   hosts: vagrant_sandbox_vms
+#   roles:
+#     - role: amtega.docker_sandbox
+#       docker_provisioner_containers_provisioning_method: sequential
+#       docker_sandbox_images: "{{ images_inventory_5 }}"
+#       docker_sandbox_containers: "{{ containers_inventory_5 }}"
+#       docker_sandbox_state: started
+#       docker_sandbox_group: docker_sandbox_containers_cleanup_by_user
+#       docker_sandbox_idempotence_test: false
+#       docker_sandbox_cleanup_by_ppid: false
+#       docker_sandbox_cleanup_by_user: true
+#       docker_sandbox_cleanup_by_playbook: false
+#   tasks:
+#     - name: get partent process id
+#       shell: "echo $PPID"
+#       changed_when: false
+#       register: get_ppid_result
+#
+#     - name: search running docker containers created by the test
+#       shell: >-
+#         docker ps -a --format='{''{.Names}''}'
+#         --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
+#       changed_when: false
+#       register: search_test_containers_result
+#
+#     - name: verify only running docker containers are the last ones created
+#       assert:
+#         that: >-
+#           item in containers_inventory_5
+#                   | map(attribute='name')
+#                   | list
+#       loop: "{{ search_test_containers_result.stdout_lines }}"
+#
+# - name: test cleanup by playbook
+#   hosts: vagrant_sandbox_vms
+#   roles:
+#     - role: amtega.docker_sandbox
+#       docker_provisioner_containers_provisioning_method: sequential
+#       docker_sandbox_images: "{{ images_inventory_6 }}"
+#       docker_sandbox_containers: "{{ containers_inventory_6 }}"
+#       docker_sandbox_state: started
+#       docker_sandbox_group: docker_sandbox_containers
+#       docker_sandbox_idempotence_test: false
+#       docker_sandbox_cleanup_by_ppid: false
+#       docker_sandbox_cleanup_by_user: false
+#       docker_sandbox_cleanup_by_playbook: true
+#   tasks:
+#     - name: get partent process id
+#       shell: "echo $PPID"
+#       changed_when: false
+#       register: get_ppid_result
+#
+#     - name: search running docker containers created by the test
+#       shell: >-
+#         docker ps -a --format='{''{.Names}''}'
+#         --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
+#       changed_when: false
+#       register: search_test_containers_result
+#
+#     - name: verify only running docker containers are the last ones created
+#       assert:
+#         that: >-
+#           item in containers_inventory_6
+#                   | map(attribute='name')
+#                   | list
+#       loop: "{{ search_test_containers_result.stdout_lines }}"
+
+- name: create file for testing
   hosts: vagrant_sandbox_vms
-  serial: 1
-  roles:
-    - role: amtega.docker_sandbox
-      docker_provisioner_containers_provisioning_method: sequential
-      idempotence_tester_playbook: /tmp/idempotence.yml
-      docker_sandbox_images: "{{ images_inventory_3 }}"
-      docker_sandbox_containers: "{{ containers_inventory_3 }}"
-      docker_sandbox_state: started
-      docker_sandbox_group: docker_sandbox_containers
-      docker_sandbox_idempotence_test: true
-      docker_sandbox_idempotence_test_recreate_after: true
   tasks:
-    - name: assert that idempotence test was ok
-      assert:
-        that: not docker_sandbox_idempotence_result is failed
-
-- name: test that containers were recreated after running idempotence test
-  hosts: docker_sandbox_containers
-  serial: 1
-  tasks:
-    - name: check /tmp/testfile file
-      stat:
-        path: /tmp/testfile
+    - name: create testing file
+      shell: >-
+        for c in `docker ps -q`;
+        do echo "Hello World" > /tmp/testfile ;
+        done
       register: check_testfile_result
-
-    - name: check testfile file does not exist
-      assert:
-        that: not check_testfile_result.stat.exists
-
-- name: refresh inventory
-  hosts: vagrant_sandbox_vms
-  serial: 1
-  tasks:
-    - meta: refresh_inventory
-
-- name: test disabling containers recreation after idempotence test
-  hosts: vagrant_sandbox_vms
-  serial: 1
-  roles:
-    - role: amtega.docker_sandbox
-      docker_provisioner_containers_provisioning_method: sequential
-      idempotence_tester_playbook: /tmp/idempotence.yml
-      docker_sandbox_images: "{{ images_inventory_3 }}"
-      docker_sandbox_containers: "{{ containers_inventory_3 }}"
-      docker_sandbox_state: recreated
-      docker_sandbox_group: docker_sandbox_containers
-      docker_sandbox_idempotence_test: true
-      docker_sandbox_idempotence_test_recreate_after: false
-
-- name: test that containers were not recreated after idempotence test
-  hosts: docker_sandbox_containers
-  serial: 1
-  tasks:
-    - name: check /tmp/testfile file
-      stat:
-        path: /tmp/testfile
-      register: check_testfile_result
-
-    - name: check /tmp/testfile file exists
-      assert:
-        that: check_testfile_result.stat.exists
-
-    - name: emtpy sandbox images and containers facts to prepare next test
-      set_fact:
-        docker_sandbox_images: []
-        docker_sandbox_containers: []
-
-- name: refresh inventory
-  hosts: vagrant_sandbox_vms
-  serial: 1
-  tasks:
-    - meta: refresh_inventory
-
-- name: test cleanup by ppid
-  hosts: vagrant_sandbox_vms
-  roles:
-    - role: amtega.docker_sandbox
-      docker_provisioner_containers_provisioning_method: sequential
-      docker_sandbox_images: "{{ images_inventory_4 }}"
-      docker_sandbox_containers: "{{ containers_inventory_4 }}"
-      docker_sandbox_state: started
-      docker_sandbox_group: docker_sandbox_containers_cleanup_by_ppid
-      docker_sandbox_idempotence_test: false
-      docker_sandbox_cleanup_by_ppid: true
-      docker_sandbox_cleanup_by_user: false
-      docker_sandbox_cleanup_by_playbook: false
-  tasks:
-    - name: get partent process id
-      shell: "echo $PPID"
       changed_when: false
-      register: get_ppid_result
-
-    - name: search running docker containers created by the test
-      shell: >-
-        docker ps -a --format='{''{.Names}''}'
-        --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
-      changed_when: false
-      register: search_test_containers_result
-
-    - name: verify only running docker containers are the last ones created
-      assert:
-        that: >-
-          item in containers_inventory_4
-                  | map(attribute='name')
-                  | list
-      loop: "{{ search_test_containers_result.stdout_lines }}"
-
-- name: test cleanup by user
-  hosts: vagrant_sandbox_vms
-  serial: 1
-  roles:
-    - role: amtega.docker_sandbox
-      docker_provisioner_containers_provisioning_method: sequential
-      docker_sandbox_images: "{{ images_inventory_5 }}"
-      docker_sandbox_containers: "{{ containers_inventory_5 }}"
-      docker_sandbox_state: started
-      docker_sandbox_group: docker_sandbox_containers_cleanup_by_user
-      docker_sandbox_idempotence_test: false
-      docker_sandbox_cleanup_by_ppid: false
-      docker_sandbox_cleanup_by_user: true
-      docker_sandbox_cleanup_by_playbook: false
-  tasks:
-    - name: get partent process id
-      shell: "echo $PPID"
-      changed_when: false
-      register: get_ppid_result
-
-    - name: search running docker containers created by the test
-      shell: >-
-        docker ps -a --format='{''{.Names}''}'
-        --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
-      changed_when: false
-      register: search_test_containers_result
-
-    - name: verify only running docker containers are the last ones created
-      assert:
-        that: >-
-          item in containers_inventory_5
-                  | map(attribute='name')
-                  | list
-      loop: "{{ search_test_containers_result.stdout_lines }}"
-
-- name: test cleanup by playbook
-  hosts: vagrant_sandbox_vms
-  serial: 1
-  roles:
-    - role: amtega.docker_sandbox
-      docker_provisioner_containers_provisioning_method: sequential
-      docker_sandbox_images: "{{ images_inventory_6 }}"
-      docker_sandbox_containers: "{{ containers_inventory_6 }}"
-      docker_sandbox_state: started
-      docker_sandbox_group: docker_sandbox_containers
-      docker_sandbox_idempotence_test: false
-      docker_sandbox_cleanup_by_ppid: false
-      docker_sandbox_cleanup_by_user: false
-      docker_sandbox_cleanup_by_playbook: true
-  tasks:
-    - name: get partent process id
-      shell: "echo $PPID"
-      changed_when: false
-      register: get_ppid_result
-
-    - name: search running docker containers created by the test
-      shell: >-
-        docker ps -a --format='{''{.Names}''}'
-        --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
-      changed_when: false
-      register: search_test_containers_result
-
-    - name: verify only running docker containers are the last ones created
-      assert:
-        that: >-
-          item in containers_inventory_6
-                  | map(attribute='name')
-                  | list
-      loop: "{{ search_test_containers_result.stdout_lines }}"
-
-- import_playbook: idempotence.yml
+      failed_when: false
+  tags:
+    - idempotence
 
 - name: test docker sandbox cleanup
   hosts: vagrant_sandbox_vms
-  serial: 1
   roles:
     - role: amtega.docker_sandbox
       docker_sandbox_images: >-
