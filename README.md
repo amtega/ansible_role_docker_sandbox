@@ -14,8 +14,7 @@ A list of all the default variables for this role is available in `defaults/main
 
 Also, the role setup the following facts during execution:
 
-- docker_sandbox_images: contains the list of docker images provisioned on the sandbox.
-- docker_sandbox_containers: contains the list of randomized docker containers provisioned on the sandbox.
+- docker_provisioner_stalled_containers: contains a list of dicts with the stalled containers detected by the role.
 - docker_sandbox_inventory: contains the path to a inventory file with the docker containers deployed in the sandbox.
 - docker_sandbox_idempotence_result: contains the result of the idempotence tests.
 
