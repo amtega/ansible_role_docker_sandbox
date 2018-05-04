@@ -1,0 +1,5 @@
+{% for container in stalled_containers %}
+- name: "{{ container }}"
+  state: "absent"
+  image: ""
+{% endfor %}
