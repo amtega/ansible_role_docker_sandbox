@@ -24,7 +24,7 @@
     - name: search previous dockers containers created by same user
       shell: >-
         docker ps -a --format='{''{.Names}''}'
-        --filter label=docker_sandbox_user={{ ansible_user_id }}
+        --filter label=docker_sandbox_user={{ ansible_facts.user_id }}
       changed_when: false
       when: docker_sandbox_cleanup_by_user
       register: docker_sandbox_containers_by_user_result
@@ -48,46 +48,36 @@
       register: docker_sandbox_containers_by_inventory_result
       check_mode: no
 
-    - name: launch asynchronous cleanup of stalled docker containers
-      docker_container:
-        name: "{{ item }}"
-        state: absent
-        force_kill: true
-      when: >-
-        docker_sandbox_cleanup_by_ppid
-        or docker_sandbox_cleanup_by_user
-        or docker_sandbox_cleanup_by_playbook
-        or docker_sandbox_cleanup_by_inventory
-      register: docker_sandbox_stalled_async_result
-      loop: >-
-        {{ docker_sandbox_containers_by_ppid_result.stdout_lines | default([])
-           | union(
-               docker_sandbox_containers_by_user_result.stdout_lines
-               | default([]))
-           | union(
-               docker_sandbox_containers_by_playbook_result.stdout_lines
-               | default([]))
-           | union(
-               docker_sandbox_containers_by_inventory_result.stdout_lines
-               | default([]))
-           | difference(
-               docker_sandbox_containers | map(attribute='name') | list)
-           | unique }}
-      async: "{{ docker_sandbox_cleanup_max_time }}"
-      poll: 0
-      changed_when: false
+    - name: setup fact with stalled containers
+      set_fact:
+        docker_provisioner_stalled_containers: >-
+          {{ lookup('template', 'stalled_containers.j2') | from_yaml }}
+      vars:
+        stalled_containers: >-
+          {{ docker_sandbox_containers_by_ppid_result.stdout_lines
+             | default([])
+             | union(
+                 docker_sandbox_containers_by_user_result.stdout_lines
+                 | default([]))
+             | union(
+                 docker_sandbox_containers_by_playbook_result.stdout_lines
+                 | default([]))
+             | union(
+                 docker_sandbox_containers_by_inventory_result.stdout_lines
+                 | default([]))
+             | difference(
+                 docker_sandbox_containers | map(attribute='name') | list)
+             | unique }}
 
-    - name: check asynchronous stalled docker containers cleanup
-      async_status:
-        jid: "{{ async_result_item.ansible_job_id }}"
-      loop: "{{ docker_sandbox_stalled_async_result.results }}"
-      register: docker_sandbox_stalled_async_poll_results
-      loop_control:
-        label: "{{ async_result_item.item }}"
-        loop_var: async_result_item
-      until: docker_sandbox_stalled_async_poll_results.finished
-      retries: "{{ docker_sandbox_cleanup_max_time }}"
-      delay: 1
+    - name: destroy previous stalled docker containers
+      include_role:
+        name: amtega.docker_provisioner
+      when: docker_provisioner_containers | length > 0
+      vars:
+        docker_provisioner_images: []
+        docker_provisioner_containers: >-
+          {{ docker_provisioner_stalled_containers }}
+        docker_provisioner_in_memory_inventory: false
   tags:
     - role::docker_sandbox
     - role::docker_sandbox::stalled

@@ -1,5 +1,5 @@
 ---
-# Role tasks
+# Docker presets tasks
 
 - name: defaulting docker sandbox from docker_presets role
   set_fact:

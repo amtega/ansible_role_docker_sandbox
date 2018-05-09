@@ -14,8 +14,7 @@ A list of all the default variables for this role is available in `defaults/main
 
 Also, the role setup the following facts during execution:
 
-- docker_sandbox_images: contains the list of docker images provisioned on the sandbox.
-- docker_sandbox_containers: contains the list of randomized docker containers provisioned on the sandbox.
+- docker_provisioner_stalled_containers: contains a list of dicts with the stalled containers detected by the role.
 - docker_sandbox_inventory: contains the path to a inventory file with the docker containers deployed in the sandbox.
 - docker_sandbox_idempotence_result: contains the result of the idempotence tests.
 
@@ -91,9 +90,9 @@ ansible-playbook files/cleanup_sandbox.yml -e "docker_sandbox_inventory=/tmp/ans
 
 ## Testing
 
-Tests are based on docker containers. You can setup docker engine quickly using the playbook `files/setup.yml` available in the role [amtega.docker_engine](https://galaxy.ansible.com/amtega/docker_engine).
+Tests are based on vagrant virtual machines. You can setup vagrant engine quickly using the playbook `files/setup.yml` available in the role [amtega.vagrant_engine](https://galaxy.ansible.com/amtega/vagrant_engine).
 
-Once you have docker, you can run the tests with the following commands:
+Once you have vagrant, you can run the tests with the following commands:
 
 ```shell
 $ cd amtega.docker_sandbox/tests
