@@ -58,7 +58,7 @@
     - name: generate docker random images presets
       set_fact:
         docker_sandbox_images_random:
-          - "{{ docker_presets_images[0] }}"
+          - "{{ docker_presets_images | random }}"
 
     - name: generate docker random containers presets
       set_fact:
@@ -110,11 +110,6 @@
         containers_inventory_6: >
           {{ docker_sandbox_containers_random
              | docker_presets_randomize_names }}
-  vars:
-    container_preset: >-
-      {{ inventory_hostname | regex_replace('(.*_.*)_.*', '\1') }}
-    registry:
-      repository: "{{ host_get_ip_result.stdout }}:5000/{{ container_preset }}"
 
 - name: test disabling idempotence check
   hosts: vagrant_sandbox_vms
@@ -388,20 +383,6 @@
                   | list
       loop: "{{ search_test_containers_result.stdout_lines }}"
 
-- name: create file for testing
-  hosts: vagrant_sandbox_vms
-  tasks:
-    - name: create testing file
-      shell: >-
-        for c in `docker ps -q`;
-        do echo "Hello World" > /tmp/testfile ;
-        done
-      register: check_testfile_result
-      changed_when: false
-      failed_when: false
-  tags:
-    - idempotence
-
 - name: test docker sandbox cleanup
   hosts: vagrant_sandbox_vms
   roles:
@@ -431,14 +412,14 @@
     - name: verify there are not running test docker containers
       assert:
        that: >-
-        item not in containers_inventory_1
-                    | union(containers_inventory_2)
-                    | union(containers_inventory_3)
-                    | union(containers_inventory_4)
-                    | union(containers_inventory_5)
-                    | union(containers_inventory_6)
-                    | map(attribute='name')
-                    | list
+         item not in containers_inventory_1
+                     | union(containers_inventory_2)
+                     | union(containers_inventory_3)
+                     | union(containers_inventory_4)
+                     | union(containers_inventory_5)
+                     | union(containers_inventory_6)
+                     | map(attribute='name')
+                     | list
       loop: "{{ search_test_containers_result.stdout_lines }}"
 
 - name: cleanup vagrant sandbox
