@@ -9,12 +9,14 @@
             suffix: .inventory.yml
           register: docker_sandbox_create_inventory_result
 
-        - name: >-
-            setup fact with path to inventory
-            {{ docker_sandbox_create_inventory_result.path }}
+        - name: setup fact with path to inventory
           set_fact:
             docker_sandbox_inventory: >-
               {{ docker_sandbox_create_inventory_result.path }}
+
+        - name: show inventory file path
+          debug:
+            msg: "{{ docker_sandbox_inventory }}"
       when:
         - docker_sandbox_state in ["started", "recreated"]
         - >-
