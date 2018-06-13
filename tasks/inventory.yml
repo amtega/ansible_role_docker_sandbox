@@ -13,15 +13,16 @@
           set_fact:
             docker_sandbox_inventory: >-
               {{ docker_sandbox_create_inventory_result.path }}
-
-        - name: show inventory file path
-          debug:
-            msg: "{{ docker_sandbox_inventory }}"
       when:
         - docker_sandbox_state in ["started", "recreated"]
         - >-
           docker_sandbox_inventory is none
           or docker_sandbox_inventory | length == 0
+
+    - name: show inventory file path
+      debug:
+        msg: "{{ docker_sandbox_inventory }}"
+      when: docker_sandbox_create_inventory_result is changed
 
     - name: delete temporary file with docker sandbox containers inventory
       file:
