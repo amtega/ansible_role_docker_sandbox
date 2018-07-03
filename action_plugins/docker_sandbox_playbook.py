@@ -2,8 +2,10 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import re, sys
+import re
+import sys
 from ansible.plugins.action import ActionBase
+
 
 class ActionModule(ActionBase):
 
@@ -18,7 +20,7 @@ class ActionModule(ActionBase):
         # Setup argument parser
 
         for arg in sys.argv:
-            if re.search('.*\.yml', arg):
+            if re.search(r'.*\.yml', arg):
                 playbook = arg
                 break
 
