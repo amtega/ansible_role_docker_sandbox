@@ -235,7 +235,7 @@
           - check_testfile_result.stdout is search("MISSING")
 
 - name: refresh inventory
-  hosts: vagrant_sandbox_vms
+  hosts: localhost
   tasks:
     - meta: refresh_inventory
 
@@ -277,7 +277,7 @@
         docker_sandbox_containers: []
 
 - name: refresh inventory
-  hosts: vagrant_sandbox_vms
+  hosts: localhost
   tasks:
     - meta: refresh_inventory
 
