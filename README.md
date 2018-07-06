@@ -6,7 +6,7 @@ The role will provisione a docker based sandbox and run idempotence tests on the
 
 ## Requirements
 
-[Ansible 2.5+](http://docs.ansible.com/ansible/latest/intro_installation.html)
+[Ansible 2.6+](http://docs.ansible.com/ansible/latest/intro_installation.html)
 
 ## Role Variables
 
