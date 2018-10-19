@@ -1,6 +1,7 @@
 ---
 
 galaxy_info:
+  role_name: docker_sandbox
   author: Juan Antonio Valiño García
   description: >-
     Wraps docker_provisioner and idempotence_tester roles to make easy to run
