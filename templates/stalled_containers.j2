@@ -1,9 +1,7 @@
-{% if stalled_containers | length > 0 %}
 {% for container in stalled_containers %}
 - name: "{{ container }}"
   state: "absent"
   image: ""
-{% endfor %}
 {% else %}
 []
-{% endif %}
+{% endfor %}
