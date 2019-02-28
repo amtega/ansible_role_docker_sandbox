@@ -144,12 +144,12 @@
       docker_sandbox_cleanup_by_inventory: true
   tasks:
     - name: get partent process id
-      shell: "echo $PPID"
+      command: "echo $PPID"
       changed_when: false
       register: get_ppid_result
 
     - name: search running docker containers created by the test
-      shell: >-
+      command: >-
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
       changed_when: false
@@ -173,12 +173,12 @@
       docker_sandbox_inventory: "./docker_sandbox_inventory"
   tasks:
     - name: get partent process id
-      shell: "echo $PPID"
+      command: "echo $PPID"
       changed_when: false
       register: get_ppid_result
 
     - name: search running docker containers created by the test
-      shell: >-
+      command: >-
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
       changed_when: false
@@ -224,6 +224,8 @@
         do docker exec $c test -f /tmp/testfile
         && echo EXISTS || echo MISSING ;
         done
+      args:
+        warn: no
       register: check_testfile_result
       changed_when: false
       failed_when: false
@@ -261,6 +263,8 @@
         do docker exec $c test -f /tmp/testfile
         && echo EXISTS || echo MISSING ;
         done
+      args:
+        warn: no
       register: check_testfile_result
       changed_when: false
       failed_when: false
@@ -296,12 +300,12 @@
       docker_sandbox_cleanup_by_playbook: false
   tasks:
     - name: get partent process id
-      shell: "echo $PPID"
+      command: "echo $PPID"
       changed_when: false
       register: get_ppid_result
 
     - name: search running docker containers created by the test
-      shell: >-
+      command: >-
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
       changed_when: false
@@ -330,12 +334,12 @@
       docker_sandbox_cleanup_by_playbook: false
   tasks:
     - name: get partent process id
-      shell: "echo $PPID"
+      command: "echo $PPID"
       changed_when: false
       register: get_ppid_result
 
     - name: search running docker containers created by the test
-      shell: >-
+      command: >-
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
       changed_when: false
@@ -364,12 +368,12 @@
       docker_sandbox_cleanup_by_playbook: true
   tasks:
     - name: get partent process id
-      shell: "echo $PPID"
+      command: "echo $PPID"
       changed_when: false
       register: get_ppid_result
 
     - name: search running docker containers created by the test
-      shell: >-
+      command: >-
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_ppid={{ get_ppid_result.stdout }}
       changed_when: false
@@ -404,7 +408,7 @@
       docker_sandbox_state: absent
   tasks:
     - name: search running docker containers
-      shell: >-
+      command: >-
         docker ps -a --format='{''{.Names}''}'
       changed_when: false
       register: search_test_containers_result

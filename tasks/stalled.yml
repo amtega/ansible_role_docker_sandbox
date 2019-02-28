@@ -12,7 +12,7 @@
           {{ playbook_dir }}/{{ docker_sandbox_get_playbook_result.playbook }}
 
     - name: search previous dockers containers created by same parent ppid
-      shell: >-
+      command: >-
         docker ps -a --format='{''{.Names}''}'
         --filter
         label=docker_sandbox_ppid={{ docker_sandbox_get_ppid_result.stdout }}
@@ -22,7 +22,7 @@
       check_mode: no
 
     - name: search previous dockers containers created by same user
-      shell: >-
+      command: >-
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_user={{ user }}
       changed_when: false
@@ -34,7 +34,7 @@
           {{ (ansible_facts.env | default(ansible_facts.ansible_env))["USER"] }}
 
     - name: search previous dockers containers created by same playbook
-      shell: >-
+      command: >-
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_playbook={{ docker_sandbox_playbook }}
       changed_when: false
@@ -43,7 +43,7 @@
       check_mode: no
 
     - name: search previous dockers containers created with same inventory
-      shell: >-
+      command: >-
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_inventory={{ docker_sandbox_inventory }}
       changed_when: false
