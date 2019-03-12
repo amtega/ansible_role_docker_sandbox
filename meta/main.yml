@@ -28,19 +28,23 @@ galaxy_info:
 
 dependencies:
   - role: amtega.check_platform
-    check_platform_distributions:
-      centos: 7
-      debian: 9
-      fedora: 27
-      rhel: 7
+    vars:
+      check_platform_distributions:
+        centos: 7
+        debian: 9
+        fedora: 27
+        rhel: 7
     tags:
       - role::docker_sandbox
 
   - role: amtega.docker_engine
-    when: false
+    tags:
+      - never
 
   - role: amtega.docker_provisioner
-    when: false
+    tags:
+      - never
 
   - role: amtega.idempotence_tester
-    when: false
+    tags:
+      - never

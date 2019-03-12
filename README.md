@@ -4,10 +4,6 @@ This is an [Ansible](http://www.ansible.com) role that wraps docker_provisioner 
 
 The role will provisione a docker based sandbox and run idempotence tests on the deployed containers.
 
-## Requirements
-
-[Ansible 2.7+](http://docs.ansible.com/ansible/latest/intro_installation.html)
-
 ## Role Variables
 
 A list of all the default variables for this role is available in `defaults/main.yml`.
@@ -17,15 +13,6 @@ Also, the role setup the following facts during execution:
 - docker_provisioner_stalled_containers: contains a list of dicts with the stalled containers detected by the role.
 - docker_sandbox_inventory: contains the path to a inventory file with the docker containers deployed in the sandbox.
 - docker_sandbox_idempotence_result: contains the result of the idempotence tests.
-
-## Dependencies
-
-- [amtega.check_platform](https://galaxy.ansible.com/amtega/check_platform)
-- [amtega.docker_engine](https://galaxy.ansible.com/amtega/docker_engine)
-- [amtega.docker_provisioner](https://galaxy.ansible.com/amtega/docker_provisioner)
-- [amtega.idempotence_tester](https://galaxy.ansible.com/amtega/idempotence_tester)
-
-You can tune the behaviour of this dependant roles with their respective settings.
 
 ## Example Playbook
 
