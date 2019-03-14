@@ -1,10 +1,10 @@
 ---
 # Drop a sandbox environment
 
-- name: cleanup docker sandbox environment
+- name: Cleanup docker sandbox environment
   hosts: localhost
   vars_prompt:
-    - name: "docker_sandbox_inventory"
+    - name: docker_sandbox_inventory
       prompt: >-
         Enter absolute path to docker sandbox inventory file
         (if not given will try to cleanup all docker sandboxes)

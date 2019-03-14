@@ -2,16 +2,16 @@
 # Stalled containers managament tasks
 
 - block:
-    - name: get playbook file
+    - name: Get playbook file
       docker_sandbox_playbook:
       register: docker_sandbox_get_playbook_result
 
-    - name: setup fact with full playbook path
+    - name: Setup fact with full playbook path
       set_fact:
         docker_sandbox_playbook: >-
           {{ playbook_dir }}/{{ docker_sandbox_get_playbook_result.playbook }}
 
-    - name: search previous dockers containers created by same parent ppid
+    - name: Search previous dockers containers created by same parent ppid
       command: >-
         docker ps -a --format='{''{.Names}''}'
         --filter
@@ -21,7 +21,7 @@
       register: docker_sandbox_containers_by_ppid_result
       check_mode: no
 
-    - name: search previous dockers containers created by same user
+    - name: Search previous dockers containers created by same user
       command: >-
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_user={{ user }}
@@ -33,7 +33,7 @@
         user: >-
           {{ (ansible_facts.env | default(ansible_facts.ansible_env))["USER"] }}
 
-    - name: search previous dockers containers created by same playbook
+    - name: Search previous dockers containers created by same playbook
       command: >-
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_playbook={{ docker_sandbox_playbook }}
@@ -42,7 +42,7 @@
       register: docker_sandbox_containers_by_playbook_result
       check_mode: no
 
-    - name: search previous dockers containers created with same inventory
+    - name: Search previous dockers containers created with same inventory
       command: >-
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_inventory={{ docker_sandbox_inventory }}
@@ -51,7 +51,7 @@
       register: docker_sandbox_containers_by_inventory_result
       check_mode: no
 
-    - name: setup fact with stalled containers
+    - name: Setup fact with stalled containers
       set_fact:
         docker_provisioner_stalled_containers: >-
           {{ lookup('template', 'stalled_containers.j2') | from_yaml }}
@@ -72,7 +72,7 @@
                  docker_sandbox_containers | map(attribute='name') | list)
              | unique }}
 
-    - name: destroy previous stalled docker containers
+    - name: Destroy previous stalled docker containers
       include_role:
         name: amtega.docker_provisioner
       when: docker_provisioner_containers | length > 0
