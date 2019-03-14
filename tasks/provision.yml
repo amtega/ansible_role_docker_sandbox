@@ -1,7 +1,7 @@
 ---
 # Docker provision tasks
 
-- name: provisione docker sandbox environment
+- name: Provisione docker sandbox environment
   include_role:
     name: amtega.docker_provisioner
   vars:

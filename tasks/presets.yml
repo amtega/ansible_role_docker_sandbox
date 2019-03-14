@@ -1,7 +1,7 @@
 ---
 # Docker presets tasks
 
-- name: defaulting docker sandbox from docker_presets role
+- name: Defaulting docker sandbox from docker_presets role
   set_fact:
     docker_sandbox_images: >-
       {{ docker_presets_images }}

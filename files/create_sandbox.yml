@@ -1,10 +1,10 @@
 ---
 # Create a sandbox environment
 
-- name: create docker sandbox environment
+- name: Create docker sandbox environment
   hosts: localhost
   vars_prompt:
-    - name: "docker_sandbox_inventory"
+    - name: docker_sandbox_inventory
       prompt: >-
         Enter absolute path to docker sandbox inventory file
         (if not given a random one will be created)

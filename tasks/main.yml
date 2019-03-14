@@ -1,36 +1,36 @@
 ---
 # Role tasks
 
-- name: load sandbox presets
+- name: Load sandbox presets
   import_tasks: presets.yml
   tags:
     - role::docker_sandbox
     - role::docker_sandbox::presets
 
-- name: get parent process id
+- name: Get parent process id
   import_tasks: ppid.yml
   tags:
     - role::docker_sandbox
 
-- name: manage stalled containers
+- name: Manage stalled containers
   import_tasks: stalled.yml
   tags:
     - role::docker_sandbox
     - role::docker_sandbox::stalled
 
-- name: setup sandbox inventory
+- name: Setup sandbox inventory
   import_tasks: inventory.yml
   tags:
     - role::docker_sandbox
     - role::docker_sandbox::inventory
 
-- name: setup docker sandbox environment
+- name: Setup docker sandbox environment
   import_tasks: provision.yml
   tags:
     - role::docker_sandbox
     - role::docker_sandbox::provision
 
-- name: run idempotence test
+- name: Run idempotence test
   import_tasks: idempotence.yml
   tags:
     - role::docker_sandbox
