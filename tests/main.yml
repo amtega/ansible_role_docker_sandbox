@@ -111,6 +111,10 @@
           {{ docker_sandbox_containers_random
              | docker_presets_randomize_names }}
 
+    - name: Setup idempotence test command
+      set_fact:
+        idempotence_tester_command: ansible-playbook
+
 - name: Test disabling idempotence check
   hosts: vagrant_sandbox_vms
   roles:

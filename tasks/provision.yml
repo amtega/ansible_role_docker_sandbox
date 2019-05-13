@@ -1,6 +1,26 @@
 ---
 # Docker provision tasks
 
+- name: Recreate docker sandbox environment
+  include_role:
+    name: amtega.docker_provisioner
+  when: docker_sandbox_state == "recreated"
+  vars:
+    docker_provisioner_images: []
+    docker_provisioner_image_state: present
+    docker_provisioner_containers: "{{ docker_sandbox_containers }}"
+    docker_provisioner_container_labels:
+      docker_sandbox_ppid: >-
+        {{ docker_sandbox_get_ppid_result.stdout }}
+      docker_sandbox_user: "{{ ansible_facts.user_id }}"
+      docker_sandbox_playbook: "{{ docker_sandbox_playbook }}"
+      docker_sandbox_inventory: "{{ docker_sandbox_inventory }}"
+    docker_provisioner_container_groups: ["{{ docker_sandbox_group }}"]
+    docker_provisioner_container_tty: no
+    docker_provisioner_inventory: "{{ docker_sandbox_inventory }}"
+    docker_provisioner_container_state: absent
+    docker_provisioner_force_kill: yes
+
 - name: Provisione docker sandbox environment
   include_role:
     name: amtega.docker_provisioner
