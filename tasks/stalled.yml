@@ -17,7 +17,7 @@
         --filter
         label=docker_sandbox_ppid={{ docker_sandbox_get_ppid_result.stdout }}
       changed_when: false
-      when: docker_sandbox_cleanup_by_ppid
+      when: docker_sandbox_cleanup_by_ppid | bool
       register: docker_sandbox_containers_by_ppid_result
       check_mode: no
 
@@ -26,7 +26,7 @@
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_user={{ user }}
       changed_when: false
-      when: docker_sandbox_cleanup_by_user
+      when: docker_sandbox_cleanup_by_user | bool
       register: docker_sandbox_containers_by_user_result
       check_mode: no
       vars:
@@ -38,7 +38,7 @@
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_playbook={{ docker_sandbox_playbook }}
       changed_when: false
-      when: docker_sandbox_cleanup_by_playbook
+      when: docker_sandbox_cleanup_by_playbook | bool
       register: docker_sandbox_containers_by_playbook_result
       check_mode: no
 
@@ -47,7 +47,7 @@
         docker ps -a --format='{''{.Names}''}'
         --filter label=docker_sandbox_inventory={{ docker_sandbox_inventory }}
       changed_when: false
-      when: docker_sandbox_cleanup_by_inventory
+      when: docker_sandbox_cleanup_by_inventory | bool
       register: docker_sandbox_containers_by_inventory_result
       check_mode: no
 
