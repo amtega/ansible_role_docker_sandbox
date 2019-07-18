@@ -16,7 +16,7 @@
               {{ idempotence_tester_test_result }}
       when:
         - docker_sandbox_state in ["started", "recreated"]
-        - docker_sandbox_idempotence_test
+        - docker_sandbox_idempotence_test | bool
         - docker_sandbox_inventory | length > 0
 
     - name: Recreate docker containers after running idempotence test
@@ -42,9 +42,9 @@
         docker_provisioner_force_kill: true
       when:
         - docker_sandbox_state in ["started", "recreated"]
-        - docker_sandbox_idempotence_test
+        - docker_sandbox_idempotence_test | bool
         - docker_sandbox_inventory | length > 0
-        - docker_sandbox_idempotence_test_recreate_after
+        - docker_sandbox_idempotence_test_recreate_after | bool
   tags:
     - role::docker_sandbox
     - role::docker_sandbox::idempotence
