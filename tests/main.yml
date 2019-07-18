@@ -7,7 +7,6 @@
     - role: amtega.vagrant_presets
       vagrant_presets_boxes_json_query: >-
         [? starts_with(name, `centos-7`)
-           || starts_with(name, `debian-9`)
            || starts_with(name, `fedora-29`)
            || starts_with(name, `fedora-30`) ]
     - role: amtega.vagrant_sandbox
@@ -240,11 +239,6 @@
           - not check_testfile_result.stdout is search("EXISTS")
           - check_testfile_result.stdout is search("MISSING")
 
-- name: Refresh inventory
-  hosts: localhost
-  tasks:
-    - meta: refresh_inventory
-
 - name: Test disabling containers recreation after idempotence test
   hosts: vagrant_sandbox_vms
   roles:
@@ -283,11 +277,6 @@
       set_fact:
         docker_sandbox_images: []
         docker_sandbox_containers: []
-
-- name: Refresh inventory
-  hosts: localhost
-  tasks:
-    - meta: refresh_inventory
 
 - name: Test cleanup by ppid
   hosts: vagrant_sandbox_vms
