@@ -1,6 +1,11 @@
 ---
 # Role tasks
 
+- name: Run role dependencies
+  import_tasks: dependencies.yml
+  tags:
+    - always
+
 - name: Load sandbox presets
   import_tasks: presets.yml
   tags:
