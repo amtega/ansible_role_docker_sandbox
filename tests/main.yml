@@ -19,7 +19,7 @@
   hosts: vagrant_sandbox_vms
   roles:
     - role: amtega.epel
-      when: ansible_facts.distribution | lower in ["centos", "rhel"]
+      when: ansible_facts.distribution | lower in ["centos", "redhat"]
 
     - role: amtega.rpmfusion
       when: ansible_facts.distribution | lower in ["fedora"]
