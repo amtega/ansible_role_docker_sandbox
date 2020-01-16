@@ -25,8 +25,11 @@ galaxy_info:
 
 dependencies:
   - role: amtega.check_platform
-    tags:
-      - never
+    vars:
+      check_platform_distributions:
+        centos: 7
+        fedora: 29
+        redhat: 7
 
   - role: amtega.docker_engine
     tags:
