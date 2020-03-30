@@ -30,7 +30,7 @@
     - role::docker_sandbox
     - role::docker_sandbox::provision
 
-- name: Run idempotence test
+- name: Setup testing sandbox
   import_tasks: idempotence.yml
   tags:
     - role::docker_sandbox

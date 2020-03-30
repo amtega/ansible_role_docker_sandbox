@@ -1,7 +1,7 @@
 ---
 # Tasks for testing role
 
-- name: Configure vagrant sandbox environment
+- name: Configure sandbox environment
   hosts: localhost
   roles:
     - role: amtega.vagrant_presets
@@ -19,7 +19,6 @@
   hosts: vagrant_sandbox_vms
   roles:
     - role: amtega.epel
-      when: ansible_facts.distribution | lower in ["centos", "redhat"]
 
     - role: amtega.rpmfusion
       when: ansible_facts.distribution | lower in ["fedora"]
@@ -419,7 +418,7 @@
                      | list
       loop: "{{ search_test_containers_result.stdout_lines }}"
 
-- name: Cleanup vagrant sandbox
+- name: Cleanup testing sandbox
   hosts: localhost
   roles:
     - role: amtega.vagrant_sandbox
