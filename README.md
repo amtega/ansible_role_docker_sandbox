@@ -42,7 +42,7 @@ This is an example playbook:
   tags:
     - idempotence
 
-- name: cleanup docker docker sandbox
+- name: Cleanup testing sandbox
   hosts: localhost
   roles:
     - role: docker_sandbox
