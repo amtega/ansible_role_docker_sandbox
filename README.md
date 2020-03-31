@@ -20,21 +20,20 @@ This is an example playbook:
 
 ```yaml
 ---
-- name: sample docker_sandbox usage
-  hosts: localhost
+- hosts: localhost
   roles:
     - role: amtega.docker_presets
     - role: amtega.docker_sandbox
       docker_sandbox_state: started
   tasks:
-    - name: assert that idempotence test was ok
+    - name: Assert that idempotence test was ok
       assert:
         that: not docker_sandbox_idempotence_result is failed
 
-- name: simple idempotence test
+- name: Simple idempotence test
   hosts: docker_sandbox_containers
   tasks:
-    - name: create an empty file
+    - name: Create an empty file
       copy:
         content: ""
         dest: /tmp/emptyfile
